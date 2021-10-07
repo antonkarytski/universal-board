@@ -1,6 +1,6 @@
 import { Component, FC } from 'react'
 import { ViewStyle } from 'react-native'
-import { LazyPoint } from 'lazy-brush'
+import {Coordinates, LazyPoint} from 'lazy-brush'
 
 export interface CanvasDrawProps {
   onChange?: ((canvas: CanvasDraw) => void) | null | undefined
@@ -12,8 +12,8 @@ export interface CanvasDrawProps {
   gridColor?: string | undefined
   backgroundColor?: string | undefined
   hideGrid?: boolean | undefined
-  canvasWidth?: number | string | undefined
-  canvasHeight?: number | string | undefined
+  canvasWidth?: number | undefined
+  canvasHeight?: number | undefined
   disabled?: boolean | undefined
   imgSrc?: string | undefined
   saveData?: string | undefined
@@ -44,7 +44,7 @@ interface CanvasDraw {
 export type Line = {
   brushColor: string
   brushRadius: number
-  points: LazyPoint[]
+  points: Coordinates[]
 }
 
 export type LineSettings = Partial<Pick<Line, 'brushRadius' | 'brushColor'>>

@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useRef } from 'react'
-import { GestureResponderEvent, StyleSheet, View } from 'react-native'
-import Canvas, { UniImage } from '../universalCanvas/Canvas'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { StyleSheet, View } from 'react-native'
+import Canvas from '../universalCanvas/Canvas'
+import { GImage as UniImage } from '@flyskywhy/react-native-gcanvas'
 import {
   CanvasDrawProps,
   CanvasList,
@@ -8,26 +9,19 @@ import {
   Line,
   LineSettings,
 } from './types'
-import { Catenary } from 'catenary-curve'
-import { LazyBrush, LazyPoint } from 'lazy-brush'
+import {Coordinates, LazyPoint} from 'lazy-brush'
 import {
   canvasTypes,
   defaultCanvasList,
   defaultContextList,
-  nativeDevicePixelRation,
   windowHeight,
   windowWidth,
 } from './constants'
 import { useResizeObserver } from './hooks/resizeObserver'
-import { drawImage } from './helper'
-import { useCanvasActions } from './hooks/canvasActions'
-
-function midPointBtw(p1: LazyPoint, p2: LazyPoint) {
-  return {
-    x: p1.x + (p2.x - p1.x) / 2,
-    y: p1.y + (p2.y - p1.y) / 2,
-  }
-}
+import { drawImage } from './helpers'
+import { useCanvasActions, useCanvasInterfaceDraw } from './hooks/canvasActions'
+import { useCanvasInteractHandlers } from './hooks/interactHandlers'
+import { useLazyBrush } from './hooks/lazyBrush'
 
 function setCanvasSize(
   canvas: HTMLCanvasElement | null,
@@ -51,8 +45,8 @@ const DrawArea = React.memo(
     catenaryColor = '#0a0302',
     gridColor = 'rgba(150,150,150,0.17)',
     backgroundColor = '#FFF',
-    canvasWidth = 400,
-    canvasHeight = 400,
+    canvasWidth = windowWidth,
+    canvasHeight = windowHeight,
     style,
     hideGrid = false,
     disabled = false,
@@ -63,17 +57,15 @@ const DrawArea = React.memo(
   }: CanvasDrawProps) => {
     const canvas = useRef<CanvasList>(defaultCanvasList)
     const ctxList = useRef<ContextList>(defaultContextList)
-    const canvasContainer = useRef<View | null>(null)
-    const catenary = useRef(new Catenary())
-    const pointsCache = useRef<LazyPoint[]>([])
+
+    const pointsCache = useRef<Coordinates[]>([])
     const linesCache = useRef<Line[]>([])
+
     const mouseHasMoved = useRef(true)
     const valuesChanged = useRef(true)
-    // const isDrawing = useRef(false)
-    // const isPressing = useRef(false)
+    const [isLoaded, setIsLoaded] = useState(false)
 
-    const lazy = useRef<LazyBrush | null>(null)
-    const chainLength = useRef(0)
+    const { chainLength, lazy } = useLazyBrush({ lazyRadius })
 
     const triggerOnChangeProxy = useRef(() => {})
 
@@ -85,10 +77,64 @@ const DrawArea = React.memo(
       img.src = imgSrc
     }, [imgSrc])
 
-    const {drawGrid} = useCanvasActions({
+    const saveLine = useCallback(
+      (params: LineSettings = {}) => {
+        if (pointsCache.current.length < 2 || !canvas.current.temp) return
+
+        linesCache.current.push({
+          points: [...pointsCache.current],
+          brushColor: params.brushColor || brushColor,
+          brushRadius: params.brushRadius || brushRadius,
+        })
+
+        const width = canvas.current.temp.width
+        const height = canvas.current.temp.height
+        const c = canvas.current.temp.toDataURL()
+        pointsCache.current = []
+        const img = new UniImage()
+        img.crossOrigin = 'anonymous'
+        img.src = c
+
+        ctxList.current.drawing?.drawImage(img, 0, 0, width, height)
+        ctxList.current.temp?.clearRect(0, 0, width, height)
+
+        triggerOnChangeProxy.current()
+      },
+      [
+        pointsCache,
+        linesCache,
+        canvas,
+        ctxList,
+        brushColor,
+        brushRadius,
+        triggerOnChangeProxy,
+      ]
+    )
+
+    const { drawPoints } = useCanvasActions({ ctxList, canvas })
+    const { drawGrid, drawInterface } = useCanvasInterfaceDraw({
       gridColor,
       hideGrid,
+      brushRadius,
+      brushColor,
+      hideInterface,
+      catenaryColor,
+      lazy,
+      ctxList,
+      chainLength,
     })
+    const { handleDrawStart, handleDrawMove, handleDrawEnd } =
+      useCanvasInteractHandlers({
+        onFinish: saveLine,
+        drawPoints,
+        pointsCache,
+        canvas,
+        brushColor,
+        brushRadius,
+        disabled,
+        lazy,
+        mouseHasMoved,
+      })
 
     const clear = useCallback(() => {
       linesCache.current = []
@@ -110,69 +156,6 @@ const DrawArea = React.memo(
         )
       }
     }, [])
-
-    const drawPoints = useCallback(({ points, ...settings }: Line) => {
-      if (!ctxList.current.temp) return
-      const ctx = ctxList.current.temp
-      ctx.lineJoin = 'round'
-      ctx.lineCap = 'round'
-      ctx.strokeStyle = settings.brushColor
-
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-      ctx.lineWidth = settings.brushRadius * 2
-
-      let p1 = points[0]
-      let p2 = points[1]
-
-      ctx.moveTo(p2.x, p2.y)
-      ctx.beginPath()
-
-      for (let i = 1; i < points.length; i++) {
-        const midPoint = midPointBtw(p1, p2)
-        ctx.quadraticCurveTo(p1.x, p1.y, midPoint.x, midPoint.y)
-        p1 = points[i]
-        p2 = points[i + 1]
-      }
-      ctx.lineTo(p1.x, p1.y)
-      ctx.stroke()
-    }, [])
-
-    const saveLine = useCallback(
-      (params: LineSettings = {}) => {
-        if (pointsCache.current.length < 2 || !canvas.current.temp) return
-
-        linesCache.current.push({
-          points: [...pointsCache.current],
-          brushColor: params.brushColor || brushColor,
-          brushRadius: params.brushRadius || brushRadius,
-        })
-
-        pointsCache.current = []
-
-        const width = canvas.current.temp.width
-        const height = canvas.current.temp.height
-
-        ctxList.current.drawing?.drawImage(
-          canvas.current.temp,
-          0,
-          0,
-          width,
-          height
-        )
-        ctxList.current.temp?.clearRect(0, 0, width, height)
-
-        triggerOnChangeProxy.current()
-      },
-      [
-        pointsCache,
-        linesCache,
-        canvas,
-        ctxList,
-        brushColor,
-        brushRadius,
-        triggerOnChangeProxy,
-      ]
-    )
 
     const simulateDrawingLines = useCallback(
       ({ lines, immediate }: { lines: Line[]; immediate?: boolean }) => {
@@ -261,89 +244,16 @@ const DrawArea = React.memo(
       })
     }, [linesCache, canvasWidth, canvasHeight])
 
-    const drawGrid = useCallback(
-      (ctx: CanvasRenderingContext2D | null) => {
-        if (hideGrid || !ctx) return
-        console.log(ctx)
-
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-
-        ctx.beginPath()
-        ctx.setLineDash([5, 1])
-        ctx.setLineDash([])
-        ctx.strokeStyle = gridColor
-        ctx.lineWidth = 0.5
-
-        const gridSize = 25
-
-        let countX = 0
-        while (countX < ctx.canvas.width) {
-          countX += gridSize
-          ctx.moveTo(countX, 0)
-          ctx.lineTo(countX, ctx.canvas.height)
-        }
-        ctx.stroke()
-
-        let countY = 0
-        while (countY < ctx.canvas.height) {
-          countY += gridSize
-          ctx.moveTo(0, countY)
-          ctx.lineTo(ctx.canvas.width, countY)
-        }
-        ctx.stroke()
-      },
-      [gridColor, hideGrid]
-    )
-
-    const drawInterface = useCallback(
-      (ctx, pointer, brush) => {
-        if (hideInterface || !lazy.current || !ctx) return
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-
-        // Draw brush preview
-        ctx.beginPath()
-        ctx.fillStyle = brushColor
-        ctx.arc(brush.x, brush.y, brushRadius || 10, 0, Math.PI * 2, true)
-        ctx.fill()
-
-        // Draw mouse point (the one directly at the cursor)
-        ctx.beginPath()
-        ctx.fillStyle = catenaryColor
-        ctx.arc(pointer.x, pointer.y, 4, 0, Math.PI * 2, true)
-        ctx.fill()
-
-        // Draw catenary
-        if (lazy.current.isEnabled()) {
-          ctx.beginPath()
-          ctx.lineWidth = 2
-          ctx.lineCap = 'round'
-          ctx.setLineDash([2, 4])
-          ctx.strokeStyle = catenaryColor
-          catenary.current.drawToCanvas(
-            ctxList.current.interface,
-            brush,
-            pointer,
-            chainLength.current
-          )
-          ctx.stroke()
-        }
-
-        // Draw brush point (the one in the middle of the brush preview)
-        ctx.beginPath()
-        ctx.fillStyle = catenaryColor
-        ctx.arc(brush.x, brush.y, 2, 0, Math.PI * 2, true)
-        ctx.fill()
-      },
-      [catenaryColor, catenary, brushColor, brushRadius, hideInterface]
-    )
     const loop = useCallback(
       ({ once = false } = {}) => {
-        if (!lazy.current) return
         if (mouseHasMoved.current || valuesChanged.current) {
-          const pointer = lazy.current?.getPointerCoordinates()
+          const pointer = lazy.current.getPointerCoordinates()
           const brush = lazy.current.getBrushCoordinates()
 
-          //drawInterface(ctxList.current.interface, pointer, brush)
+          drawInterface(ctxList.current.interface, pointer, brush, {
+            width: canvasWidth,
+            height: canvasHeight,
+          })
           mouseHasMoved.current = false
           valuesChanged.current = false
         }
@@ -353,7 +263,7 @@ const DrawArea = React.memo(
           loop()
         })
       },
-      [drawInterface]
+      [drawInterface, canvasWidth, canvasHeight, lazy]
     )
 
     const onResize: ResizeObserverCallback = useCallback(
@@ -366,7 +276,7 @@ const DrawArea = React.memo(
           setCanvasSize(canvas.current.temp, width, height)
           setCanvasSize(canvas.current.grid, width, height)
 
-          drawGrid(ctxList.current.grid)
+          drawGrid(ctxList.current.grid, { width, height })
           drawImageRequest()
           loop({ once: true })
         }
@@ -375,51 +285,52 @@ const DrawArea = React.memo(
       [getSaveData, loadSaveData, drawImageRequest, loop, drawGrid]
     )
 
-    useResizeObserver({
-      canvasContainer: canvasContainer.current,
-      onResize,
-    })
+    const { observable: containerRef } = useResizeObserver({ onResize })
 
     useEffect(() => {
-      lazy.current = new LazyBrush({
-        radius: lazyRadius * nativeDevicePixelRation,
-        enabled: true,
-        initialPoint: {
-          x: windowWidth / 2,
-          y: windowHeight / 2,
-        },
+      if (!isLoaded) return
+
+      drawGrid(ctxList.current.grid, {
+        width: canvasWidth,
+        height: canvasHeight,
       })
-      chainLength.current = lazyRadius * nativeDevicePixelRation
-      //
-      // drawImageRequest()
-      // loop()
-      //
-      // setTimeout(() => {
-      //   const initX = windowWidth / 2
-      //   const initY = windowHeight / 2
-      //   lazy.current?.update(
-      //     { x: initX - chainLength.current / 4, y: initY },
-      //     { both: true }
-      //   )
-      //   lazy.current?.update(
-      //     { x: initX + chainLength.current / 4, y: initY },
-      //     { both: false }
-      //   )
-      //   mouseHasMoved.current = true
-      //   valuesChanged.current = true
-      //   clear()
-      //
-      //   // Load saveData from prop if it exists
-      //   if (saveData) {
-      //     loadSaveData(saveData)
-      //   }
-      // }, 100)
-    }, [clear, drawImageRequest, lazyRadius, loadSaveData, loop, saveData])
+      drawImageRequest()
+      console.log('loop start')
+      loop()
 
-    useEffect(() => {
-      chainLength.current = lazyRadius * nativeDevicePixelRation
-      lazy.current?.setRadius(lazyRadius * window.devicePixelRatio)
-    }, [lazyRadius])
+      setTimeout(() => {
+        const initX = canvasWidth / 2
+        const initY = canvasHeight / 2
+        lazy.current?.update(
+          { x: initX - chainLength / 4, y: initY },
+          { both: true }
+        )
+        lazy.current?.update(
+          { x: initX + chainLength / 4, y: initY },
+          { both: false }
+        )
+        mouseHasMoved.current = true
+        valuesChanged.current = true
+        clear()
+
+        // Load saveData from prop if it exists
+        if (saveData) {
+          loadSaveData(saveData)
+        }
+      }, 100)
+    }, [
+      lazy,
+      chainLength,
+      isLoaded,
+      clear,
+      drawImageRequest,
+      loadSaveData,
+      loop,
+      saveData,
+      drawGrid,
+      canvasHeight,
+      canvasWidth,
+    ])
 
     useEffect(() => {
       loadSaveData(saveData)
@@ -438,115 +349,26 @@ const DrawArea = React.memo(
         })
     }, [onChange, getSaveData, loadSaveData, clear])
 
-    function getPointerPos(e: GestureResponderEvent) {
-      let clientX = e.nativeEvent.locationX
-      let clientY = e.nativeEvent.locationY
-
-      if (
-        e.nativeEvent.changedTouches &&
-        e.nativeEvent.changedTouches.length > 0
-      ) {
-        clientX = e.nativeEvent.changedTouches[0].locationX
-        clientY = e.nativeEvent.changedTouches[0].locationY
-      }
-
-      const rect = canvas.current.interface?.getBoundingClientRect()
-      if (!rect) {
-        return {
-          x: clientX,
-          y: clientY,
-        }
-      }
-      return {
-        x: clientX - rect.left,
-        y: clientY - rect.top,
-      }
-    }
-
-    function handlePointerMove(x: number, y: number) {
-      if (disabled) return
-      if (!lazy.current) return
-
-      lazy.current.update({ x, y })
-      const isDisabled = !lazy.current.isEnabled()
-
-      if (
-        (isPressing.current && !isDrawing.current) ||
-        (isDisabled && isPressing.current)
-      ) {
-        // Start drawing and add point
-        isDrawing.current = true
-        //@ts-ignore
-        pointsCache.current.push(lazy.current.brush.toObject())
-      }
-
-      if (isDrawing.current) {
-        //@ts-ignore
-        pointsCache.current.push(lazy.current.brush.toObject())
-
-        // Draw current points
-        drawPoints({
-          points: pointsCache.current,
-          brushColor,
-          brushRadius,
-        })
-      }
-
-      mouseHasMoved.current = true
-    }
-
-    function handleDrawStart(e: GestureResponderEvent) {
-      e.preventDefault()
-      console.log('start')
-      isPressing.current = true
-
-      const { x, y } = getPointerPos(e)
-
-      if (e.nativeEvent.touches && e.nativeEvent.touches.length > 0) {
-        lazy.current?.update({ x, y }, { both: true })
-      }
-
-      handlePointerMove(x, y)
-    }
-
-    function handleDrawMove(e: GestureResponderEvent) {
-      e.preventDefault()
-
-      const { x, y } = getPointerPos(e)
-      handlePointerMove(x, y)
-    }
-
-    function handleDrawEnd(e: GestureResponderEvent) {
-      e.preventDefault()
-
-      handleDrawMove(e)
-
-      isDrawing.current = false
-      isPressing.current = false
-      saveLine()
-    }
-
-    function undo() {
-      const lines = linesCache.current.slice(0, -1)
-      clear()
-      simulateDrawingLines({ lines, immediate: true })
-      triggerOnChangeProxy.current()
-    }
+    // function undo() {
+    //   const lines = linesCache.current.slice(0, -1)
+    //   clear()
+    //   simulateDrawingLines({ lines, immediate: true })
+    //   triggerOnChangeProxy.current()
+    // }
 
     return (
       <View
         style={[
           style,
           {
-            //backgroundColor,
+            backgroundColor,
             width: canvasWidth,
             height: canvasHeight,
-            backgroundColor: 'red',
           },
         ]}
         ref={(container) => {
           if (!container) return
-          canvasContainer.current = container
+          containerRef.current = container
         }}
       >
         {canvasTypes.map(({ name, zIndex }) => {
@@ -556,21 +378,27 @@ const DrawArea = React.memo(
               key={name}
               canvasRef={(canvasRef) => {
                 if (canvasRef) {
-                  canvas.current[name] = canvasRef
+                  canvas.current[name] = canvasRef!
+                  canvas.current[name]!.width = +canvasWidth || windowWidth
+                  canvas.current[name]!.height = +canvasHeight || windowHeight
                   ctxList.current[name] = canvasRef.getContext('2d')
+                  if (
+                    Object.entries(canvas.current).every(([, layer]) => !!layer)
+                  ) {
+                    setIsLoaded(true)
+                  }
                 }
               }}
-              style={{ ...styles.canvas, zIndex }}
-              onTouchStart={
-                isInterface
-                  ? handleDrawStart
-                  : () => {
-                      console.log('touch')
-                    }
-              }
+              style={{
+                ...styles.canvas,
+                zIndex,
+              }}
+              width={canvasWidth}
+              height={canvasHeight}
+              onTouchStart={isInterface ? handleDrawStart : () => {}}
               onTouchMove={isInterface ? handleDrawMove : () => {}}
-              onTouchEnd={isInterface ? handleDrawEnd : () => {}}
-              onTouchCancel={isInterface ? handleDrawEnd : () => {}}
+              // onTouchEnd={isInterface ? handleDrawEnd : () => {}}
+              // onTouchCancel={isInterface ? handleDrawEnd : () => {}}
             />
           )
         })}

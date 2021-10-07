@@ -1,4 +1,4 @@
-import { ImageResolvedAssetSource } from 'react-native'
+import { LazyPoint } from 'lazy-brush'
 
 type DrawImageProps = {
   ctx: CanvasRenderingContext2D | null
@@ -67,4 +67,11 @@ export function drawImage({
 
   // fill image in dest. rectangle
   ctx.drawImage(img, cx, cy, cw, ch, x, y, w, h)
+}
+
+export function midPointBtw(p1: LazyPoint, p2: LazyPoint) {
+  return {
+    x: p1.x + (p2.x - p1.x) / 2,
+    y: p1.y + (p2.y - p1.y) / 2,
+  }
 }

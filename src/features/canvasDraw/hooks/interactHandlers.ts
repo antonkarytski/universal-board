@@ -1,7 +1,31 @@
 import { GestureResponderEvent } from 'react-native'
-import { useRef } from 'react'
+import { MutableRefObject, useRef } from 'react'
+import { CanvasList } from '../types'
+import {Coordinates, LazyBrush, LazyPoint} from 'lazy-brush'
+import { CanvasActionInterface } from './canvasActions'
 
-export function useDrawActions() {
+type UseCanvasInteractHandlersProps = {
+  disabled: boolean | undefined
+  canvas: MutableRefObject<CanvasList>
+  pointsCache: MutableRefObject<Coordinates[]>
+  lazy: MutableRefObject<LazyBrush>
+  mouseHasMoved: MutableRefObject<boolean>
+  brushColor: string
+  brushRadius: number
+  onFinish: () => void
+} & CanvasActionInterface
+
+export function useCanvasInteractHandlers({
+  disabled,
+  canvas,
+  lazy,
+  pointsCache,
+  drawPoints,
+  brushColor,
+  brushRadius,
+  mouseHasMoved,
+  onFinish,
+}: UseCanvasInteractHandlersProps) {
   const isPressing = useRef(false)
   const isDrawing = useRef(false)
 
@@ -30,41 +54,25 @@ export function useDrawActions() {
     }
   }
 
-  function handleDrawStart(e: GestureResponderEvent) {
-    e.preventDefault()
-    isPressing.current = true
-
-    const { x, y } = getPointerPos(e)
-
-    if (e.nativeEvent.touches && e.nativeEvent.touches.length > 0) {
-      lazy.current?.update({ x, y }, { both: true })
-    }
-
-    handlePointerMove(x, y)
-  }
-
   function handlePointerMove(x: number, y: number) {
     if (disabled) return
-    if (!lazy.current) return
 
     lazy.current.update({ x, y })
+    console.log(lazy.current.getBrushCoordinates())
     const isDisabled = !lazy.current.isEnabled()
 
     if (
       (isPressing.current && !isDrawing.current) ||
       (isDisabled && isPressing.current)
     ) {
-      // Start drawing and add point
       isDrawing.current = true
       //@ts-ignore
       pointsCache.current.push(lazy.current.brush.toObject())
     }
 
     if (isDrawing.current) {
-      //@ts-ignore
       pointsCache.current.push(lazy.current.brush.toObject())
 
-      // Draw current points
       drawPoints({
         points: pointsCache.current,
         brushColor,
@@ -75,13 +83,29 @@ export function useDrawActions() {
     mouseHasMoved.current = true
   }
 
+  function handleDrawStart(e: GestureResponderEvent) {
+    e.preventDefault()
+    isPressing.current = true
+    const { x, y } = getPointerPos(e)
+    if (e.nativeEvent.touches && e.nativeEvent.touches.length > 0) {
+      lazy.current.update({ x, y }, { both: true })
+    }
+    handlePointerMove(x, y)
+  }
+
+  function handleDrawMove(e: GestureResponderEvent) {
+    e.preventDefault()
+    const { x, y } = getPointerPos(e)
+    handlePointerMove(x, y)
+  }
+
   function handleDrawEnd(e: GestureResponderEvent) {
     e.preventDefault()
-
     handleDrawMove(e)
-
     isDrawing.current = false
     isPressing.current = false
-    saveLine()
+    onFinish()
   }
+
+  return { handleDrawEnd, handleDrawMove, handleDrawStart }
 }

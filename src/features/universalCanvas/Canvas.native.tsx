@@ -1,5 +1,5 @@
-import React from 'react'
-import { View } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { Text, View } from 'react-native'
 import { GCanvasView } from '@flyskywhy/react-native-gcanvas'
 import { CanvasProps } from './types'
 
@@ -19,9 +19,26 @@ export default function NativeCanvas({
     canvasRef.current = canvas
   }
 
+  const size = {
+    width,
+    height,
+  }
+
   return (
-    <View {...viewProps}>
-      <GCanvasView onCanvasCreate={setRef} width={width} height={height} />
+    <View {...viewProps} style={[style, styles.container]}>
+      <GCanvasView
+        onIsReady={(value: boolean) => console.log('READY', value)}
+        onCanvasCreate={setRef}
+        style={size}
+      />
     </View>
   )
+}
+
+const styles = {
+  container: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
 }
