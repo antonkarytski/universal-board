@@ -1,26 +1,24 @@
 import { GestureResponderEvent } from 'react-native'
 import { MutableRefObject, useRef } from 'react'
-import { CanvasList } from '../types'
-import { Coordinates, LazyBrush } from 'lazy-brush'
+import { CanvasList, Line, Point } from '../types'
+import { LazyBrush } from 'lazy-brush'
 import { CanvasActionInterface } from './canvasActions'
 
 type UseCanvasInteractHandlersProps = {
   disabled: boolean | undefined
   canvas: MutableRefObject<CanvasList>
-  pointsCache: MutableRefObject<Coordinates[]>
   lazy: MutableRefObject<LazyBrush>
   mouseHasMoved: MutableRefObject<boolean>
   brushColor: string
   brushRadius: number
-  onFinish: () => void
+  onFinish: (line: Line) => void
 } & CanvasActionInterface
 
 export function useCanvasInteractHandlers({
   disabled,
   canvas,
   lazy,
-  pointsCache,
-  drawPoints,
+  drawMassive,
   brushColor,
   brushRadius,
   mouseHasMoved,
@@ -28,6 +26,7 @@ export function useCanvasInteractHandlers({
 }: UseCanvasInteractHandlersProps) {
   const isPressing = useRef(false)
   const isDrawing = useRef(false)
+  const pointsCache = useRef<Point[]>([])
 
   function getPointerPos(e: GestureResponderEvent) {
     let clientX = e.nativeEvent.locationX
@@ -54,29 +53,40 @@ export function useCanvasInteractHandlers({
     }
   }
 
-  function handlePointerMove(x: number, y: number) {
+  function handlePointerMove(e: GestureResponderEvent) {
     if (disabled) return
 
+    const { x, y } = getPointerPos(e)
     lazy.current.update({ x, y })
-    const isDisabled = !lazy.current.isEnabled()
 
-    if (
-      (isPressing.current && !isDrawing.current) ||
-      (isDisabled && isPressing.current)
-    ) {
+    if (isPressing.current && !isDrawing.current) {
+      if (e.nativeEvent.touches && e.nativeEvent.touches.length > 0) {
+        lazy.current.update({ x, y }, { both: true })
+      }
       isDrawing.current = true
-      //@ts-ignore
-      pointsCache.current.push(lazy.current.brush.toObject())
+      pointsCache.current.push({
+        ...lazy.current.brush.toObject(),
+        timeStamp: e.timeStamp,
+        firstTouch: true,
+      })
+      return
     }
 
     if (isDrawing.current) {
-      pointsCache.current.push(lazy.current.brush.toObject())
-
-      drawPoints({
-        points: pointsCache.current,
-        brushColor,
-        brushRadius,
+      pointsCache.current.push({
+        ...lazy.current.brush.toObject(),
+        timeStamp: e.timeStamp,
       })
+      drawMassive(
+        {
+          points: pointsCache.current,
+          brushColor,
+          brushRadius,
+        },
+        {
+          lastPart: true,
+        }
+      )
     }
 
     mouseHasMoved.current = true
@@ -86,24 +96,20 @@ export function useCanvasInteractHandlers({
     e.preventDefault()
     isPressing.current = true
     const { x, y } = getPointerPos(e)
-    if (e.nativeEvent.touches && e.nativeEvent.touches.length > 0) {
-      lazy.current.update({ x, y }, { both: true })
-    }
-    handlePointerMove(x, y)
+    handlePointerMove(e)
   }
 
   function handleDrawMove(e: GestureResponderEvent) {
     e.preventDefault()
-    const { x, y } = getPointerPos(e)
-    handlePointerMove(x, y)
+    handlePointerMove(e)
   }
 
   function handleDrawEnd(e: GestureResponderEvent) {
     e.preventDefault()
-    handleDrawMove(e)
     isDrawing.current = false
     isPressing.current = false
-    onFinish()
+    onFinish({ points: [...pointsCache.current], brushRadius, brushColor })
+    pointsCache.current = []
   }
 
   return { handleDrawEnd, handleDrawMove, handleDrawStart }

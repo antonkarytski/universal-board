@@ -52,7 +52,6 @@ export function useDrawBoard({ saveHistoryTo }: UseDrawBoardProps = {}) {
 
   function drawDot({ x, y, timeStamp }: Point) {
     const ctx = canvasRef.current?.getContext('2d')
-    console.log(x, y)
     if (!ctx) return
     ctx.beginPath()
     ctx.arc(x, y, 1, 0, 2 * Math.PI)

@@ -2,14 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import Canvas from './canvas/Canvas'
 import UniImage from './canvas/UniImage'
-import {
-  CanvasDrawProps,
-  CanvasList,
-  ContextList,
-  Line,
-  LineSettings,
-} from './types'
-import { Coordinates } from 'lazy-brush'
+import { CanvasDrawProps, CanvasList, ContextList, Line } from './types'
 import {
   canvasTypes,
   defaultCanvasList,
@@ -55,15 +48,14 @@ const DrawArea = React.memo(
     immediateLoading = false,
     hideInterface = false,
   }: CanvasDrawProps) => {
+    const [isLoaded, setIsLoaded] = useState(false)
+
     const canvas = useRef<CanvasList>(defaultCanvasList)
     const ctxList = useRef<ContextList>(defaultContextList)
 
-    const pointsCache = useRef<Coordinates[]>([])
     const linesCache = useRef<Line[]>([])
-
     const mouseHasMoved = useRef(true)
     const valuesChanged = useRef(true)
-    const [isLoaded, setIsLoaded] = useState(false)
 
     const { chainLength, lazy } = useLazyBrush({ lazyRadius })
 
@@ -76,40 +68,28 @@ const DrawArea = React.memo(
       img.onload = () => drawImage({ ctx: ctxList.current.grid, img })
       img.src = imgSrc
     }, [imgSrc])
+    const { drawMassive } = useCanvasActions({ ctxList })
 
     const saveLine = useCallback(
-      (params: LineSettings = {}) => {
-        if (pointsCache.current.length < 2 || !canvas.current.temp) return
+      (line: Line) => {
+        if (
+          line.points.length < 2 ||
+          !ctxList.current.drawing ||
+          !canvas.current.temp
+        )
+          return
 
-        linesCache.current.push({
-          points: [...pointsCache.current],
-          brushColor: params.brushColor || brushColor,
-          brushRadius: params.brushRadius || brushRadius,
-        })
+        linesCache.current.push(line)
 
+        drawMassive(line, { customContext: ctxList.current.drawing })
         const width = canvas.current.temp.width
         const height = canvas.current.temp.height
-        const c = canvas.current.temp.toDataURL()
-        pointsCache.current = []
-        const img = new UniImage()
-        img.crossOrigin = 'anonymous'
-        ctxList.current.drawing?.drawImage(img, 0, 0, width, height)
         ctxList.current.temp?.clearRect(0, 0, width, height)
-
         triggerOnChangeProxy.current()
       },
-      [
-        pointsCache,
-        linesCache,
-        canvas,
-        ctxList,
-        brushColor,
-        brushRadius,
-        triggerOnChangeProxy,
-      ]
+      [linesCache, canvas, ctxList, triggerOnChangeProxy, drawMassive]
     )
 
-    const { drawPoints } = useCanvasActions({ ctxList, canvas })
     const { drawGrid, drawInterface } = useCanvasInterfaceDraw({
       gridColor,
       hideGrid,
@@ -124,8 +104,7 @@ const DrawArea = React.memo(
     const { handleDrawStart, handleDrawMove, handleDrawEnd } =
       useCanvasInteractHandlers({
         onFinish: saveLine,
-        drawPoints,
-        pointsCache,
+        drawMassive,
         canvas,
         brushColor,
         brushRadius,
@@ -162,8 +141,7 @@ const DrawArea = React.memo(
 
         lines.forEach((line) => {
           if (immediate) {
-            drawPoints(line)
-            pointsCache.current = line.points
+            drawMassive(line)
             saveLine(line)
             return
           }
@@ -173,7 +151,7 @@ const DrawArea = React.memo(
           for (let i = 1; i < points.length; i++) {
             curTime += timeoutGap
             setTimeout(() => {
-              drawPoints({
+              drawMassive({
                 points: points.slice(0, i + 1),
                 ...settings,
               })
@@ -182,13 +160,11 @@ const DrawArea = React.memo(
 
           curTime += timeoutGap
           setTimeout(() => {
-            // Save this line with its props instead of this.props
-            pointsCache.current = points
-            saveLine(settings)
+            saveLine(line)
           }, curTime)
         })
       },
-      [drawPoints, loadTimeOffset, saveLine]
+      [drawMassive, loadTimeOffset, saveLine]
     )
 
     const loadSaveData = useCallback(

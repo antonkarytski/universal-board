@@ -1,6 +1,5 @@
-import { Component, FC } from 'react'
 import { ViewStyle } from 'react-native'
-import {Coordinates, LazyPoint} from 'lazy-brush'
+import { Coordinates } from 'lazy-brush'
 
 export interface CanvasDrawProps {
   onChange?: ((canvas: CanvasDraw) => void) | null | undefined
@@ -41,10 +40,15 @@ interface CanvasDraw {
   clear(): void
 }
 
+export type Point = {
+  timeStamp: number
+  firstTouch?: true
+} & Coordinates
+
 export type Line = {
   brushColor: string
   brushRadius: number
-  points: Coordinates[]
+  points: Point[]
 }
 
 export type LineSettings = Partial<Pick<Line, 'brushRadius' | 'brushColor'>>

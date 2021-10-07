@@ -1,10 +1,8 @@
 import { MutableRefObject, useCallback, useRef } from 'react'
-import { CanvasDrawProps, CanvasList, ContextList, Line } from '../types'
+import { ContextList, Line, Point } from '../types'
 import { Catenary } from 'catenary-curve'
 import { LazyBrush } from 'lazy-brush'
 import { midPointBtw } from '../helpers'
-import { Platform } from 'react-native'
-import { IS_WEB } from '../helpers/platform'
 
 type UseCanvasInterfaceDrawProps = {
   hideGrid: boolean | undefined
@@ -123,47 +121,57 @@ export function useCanvasInterfaceDraw({
 
 type UseCanvasActionsProps = {
   ctxList: MutableRefObject<ContextList>
-  canvas: MutableRefObject<CanvasList>
+}
+
+type DrawPointsSettings = {
+  lastPart?: boolean
+  customContext?: CanvasRenderingContext2D
 }
 
 export type CanvasActionInterface = ReturnType<typeof useCanvasActions>
 
-export function useCanvasActions({
-  ctxList,
-  canvas: canvasList,
-}: UseCanvasActionsProps) {
-  const drawPoints = useCallback(
-    ({ points, brushColor, brushRadius }: Line) => {
-      if (!ctxList.current.temp || !canvasList.current.temp) return
+function line(ctx: CanvasRenderingContext2D, p1: Point, p2: Point) {
+  const midPoint = midPointBtw(p1, p2)
+  ctx.beginPath()
+  ctx.moveTo(p1.x, p1.y)
+  ctx.quadraticCurveTo(p2.x, p2.y, midPoint.x, midPoint.y)
+  ctx.lineTo(p2.x, p2.y)
+  ctx.stroke()
+}
 
-      const ctx = ctxList.current.temp
-      const canvas = canvasList.current.temp
+export function useCanvasActions({ ctxList }: UseCanvasActionsProps) {
+  const drawMassive = useCallback(
+    (
+      { points, brushColor, brushRadius }: Line,
+      { lastPart, customContext }: DrawPointsSettings = {}
+    ) => {
+      if (!customContext && !ctxList.current.temp) return
+
+      const ctx =
+        customContext || (ctxList.current.temp as CanvasRenderingContext2D)
 
       ctx.lineJoin = 'round'
       ctx.lineCap = 'round'
       ctx.strokeStyle = brushColor
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
       ctx.lineWidth = brushRadius * 2
 
-      let p1 = points[0]
-      let p2 = points[1]
-
-      ctx.moveTo(p2.x, p2.y)
-      ctx.beginPath()
-
-      for (let i = 1; i < points.length; i++) {
-        const midPoint = midPointBtw(p1, p2)
-        ctx.quadraticCurveTo(p1.x, p1.y, midPoint.x, midPoint.y)
-        p1 = points[i]
-        p2 = points[i + 1]
+      if (lastPart) {
+        const { length } = points
+        if (length < 2) return
+        const p1 = points[length - 2]
+        const p2 = points[length - 1]
+        line(ctx, p1, p2)
+        return
       }
 
-      ctx.lineTo(p1.x, p1.y)
-      ctx.stroke()
+      points.forEach((p2, index) => {
+        if (index === 0) return
+        const p1 = points[index - 1]
+        line(ctx, p1, p2)
+      })
     },
-    [ctxList, canvasList]
+    [ctxList]
   )
 
-  return { drawPoints }
+  return { drawMassive }
 }
