@@ -152,15 +152,12 @@ export function useCanvasActions({
       ctx.moveTo(p2.x, p2.y)
       ctx.beginPath()
 
-      //ctx.quadraticCurveTo(p1.x, p1.y, p2.x, p2.y)
-      // for (let i = 1; i < points.length; i++) {
-      //   const midPoint = midPointBtw(p1, p2)
-      //   console.log(p1.x, p1.y, midPoint.x, midPoint.y)
-      //   ctx.quadraticCurveTo(p1.x, p1.y, midPoint.x, midPoint.y)
-      //   console.log(points[0], points[i + 1])
-      //   p1 = points[i]
-      //   p2 = points[i + 1]
-      // }
+      for (let i = 1; i < points.length; i++) {
+        const midPoint = midPointBtw(p1, p2)
+        ctx.quadraticCurveTo(p1.x, p1.y, midPoint.x, midPoint.y)
+        p1 = points[i]
+        p2 = points[i + 1]
+      }
 
       ctx.lineTo(p1.x, p1.y)
       ctx.stroke()

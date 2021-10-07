@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
-import Canvas from '../universalCanvas/Canvas'
-import { GImage as UniImage } from '@flyskywhy/react-native-gcanvas'
+import Canvas from './canvas/Canvas'
+import UniImage from './canvas/UniImage'
 import {
   CanvasDrawProps,
   CanvasList,
@@ -9,7 +9,7 @@ import {
   Line,
   LineSettings,
 } from './types'
-import {Coordinates, LazyPoint} from 'lazy-brush'
+import { Coordinates } from 'lazy-brush'
 import {
   canvasTypes,
   defaultCanvasList,
@@ -93,8 +93,6 @@ const DrawArea = React.memo(
         pointsCache.current = []
         const img = new UniImage()
         img.crossOrigin = 'anonymous'
-        img.src = c
-
         ctxList.current.drawing?.drawImage(img, 0, 0, width, height)
         ctxList.current.temp?.clearRect(0, 0, width, height)
 
@@ -397,8 +395,8 @@ const DrawArea = React.memo(
               height={canvasHeight}
               onTouchStart={isInterface ? handleDrawStart : () => {}}
               onTouchMove={isInterface ? handleDrawMove : () => {}}
-              // onTouchEnd={isInterface ? handleDrawEnd : () => {}}
-              // onTouchCancel={isInterface ? handleDrawEnd : () => {}}
+              onTouchEnd={isInterface ? handleDrawEnd : () => {}}
+              onTouchCancel={isInterface ? handleDrawEnd : () => {}}
             />
           )
         })}

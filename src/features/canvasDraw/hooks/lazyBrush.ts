@@ -26,7 +26,7 @@ export function useLazyBrush({ lazyRadius }: UseLazyBrashProps) {
   const chainLength = lazyRadius * nativeDevicePixelRation
 
   useEffect(() => {
-    lazy.current.setRadius(lazyRadius * window.devicePixelRatio)
+    lazy.current.setRadius(lazyRadius * nativeDevicePixelRation)
   }, [lazyRadius])
 
   return { lazy, chainLength }

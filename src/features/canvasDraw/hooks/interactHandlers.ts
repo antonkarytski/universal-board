@@ -1,7 +1,7 @@
 import { GestureResponderEvent } from 'react-native'
 import { MutableRefObject, useRef } from 'react'
 import { CanvasList } from '../types'
-import {Coordinates, LazyBrush, LazyPoint} from 'lazy-brush'
+import { Coordinates, LazyBrush } from 'lazy-brush'
 import { CanvasActionInterface } from './canvasActions'
 
 type UseCanvasInteractHandlersProps = {
@@ -58,7 +58,6 @@ export function useCanvasInteractHandlers({
     if (disabled) return
 
     lazy.current.update({ x, y })
-    console.log(lazy.current.getBrushCoordinates())
     const isDisabled = !lazy.current.isEnabled()
 
     if (

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { Text, View } from 'react-native'
+import React from 'react'
+import { View } from 'react-native'
 import { GCanvasView } from '@flyskywhy/react-native-gcanvas'
 import { CanvasProps } from './types'
 

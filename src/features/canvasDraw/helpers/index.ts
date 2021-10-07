@@ -1,4 +1,4 @@
-import { LazyPoint } from 'lazy-brush'
+import { Coordinates, LazyPoint } from 'lazy-brush'
 
 type DrawImageProps = {
   ctx: CanvasRenderingContext2D | null
@@ -69,7 +69,7 @@ export function drawImage({
   ctx.drawImage(img, cx, cy, cw, ch, x, y, w, h)
 }
 
-export function midPointBtw(p1: LazyPoint, p2: LazyPoint) {
+export function midPointBtw(p1: Coordinates, p2: Coordinates) {
   return {
     x: p1.x + (p2.x - p1.x) / 2,
     y: p1.y + (p2.y - p1.y) / 2,
