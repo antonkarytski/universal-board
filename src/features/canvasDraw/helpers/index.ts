@@ -1,4 +1,4 @@
-import { Coordinates, LazyPoint } from 'lazy-brush'
+import { Coordinates } from 'lazy-brush'
 
 type DrawImageProps = {
   ctx: CanvasRenderingContext2D | null
@@ -9,6 +9,8 @@ type DrawImageProps = {
   h?: number
   offsetX?: number
   offsetY?: number
+  width: number
+  height: number
 }
 
 export function drawImage({
@@ -20,12 +22,14 @@ export function drawImage({
   h,
   offsetX,
   offsetY,
+  width,
+  height,
 }: DrawImageProps) {
   if (!ctx) return
   if (typeof x !== 'number') x = 0
   if (typeof y !== 'number') y = 0
-  if (typeof w !== 'number') w = ctx.canvas.width
-  if (typeof h !== 'number') h = ctx.canvas.height
+  if (typeof w !== 'number') w = width
+  if (typeof h !== 'number') h = height
   if (typeof offsetX !== 'number') offsetX = 0.5
   if (typeof offsetY !== 'number') offsetY = 0.5
 
@@ -74,4 +78,16 @@ export function midPointBtw(p1: Coordinates, p2: Coordinates) {
     x: p1.x + (p2.x - p1.x) / 2,
     y: p1.y + (p2.y - p1.y) / 2,
   }
+}
+
+function setCanvasSize(
+  canvas: HTMLCanvasElement | null,
+  width: number | string,
+  height: number | string
+) {
+  if (!canvas) return
+  canvas.width = +width
+  canvas.height = +height
+  canvas.style.width = width + ''
+  canvas.style.height = height + ''
 }

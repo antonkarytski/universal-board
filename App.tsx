@@ -1,11 +1,11 @@
 import React from 'react'
 import { SafeAreaView } from 'react-native'
-import DrawArea from './src/features/canvasDraw/DrawArea'
+import DrawBoard from './src/features/canvasDraw/DrawBoard'
 
 const App = () => {
   return (
     <SafeAreaView>
-      <DrawArea />
+      <DrawBoard />
     </SafeAreaView>
   )
 }

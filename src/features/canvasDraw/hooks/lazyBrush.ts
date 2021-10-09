@@ -10,6 +10,8 @@ type UseLazyBrashProps = {
   lazyRadius: number
 }
 
+export type LazyBrushInterface = ReturnType<typeof useLazyBrush>
+
 function createLazyBrush(lazyRadius: number) {
   return new LazyBrush({
     radius: lazyRadius * nativeDevicePixelRation,

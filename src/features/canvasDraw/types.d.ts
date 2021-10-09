@@ -1,7 +1,14 @@
-import { ViewStyle } from 'react-native'
+import { StyleProp, ViewStyle } from 'react-native'
 import { Coordinates } from 'lazy-brush'
+import { UnionFrom } from './helpers/types'
+import * as COLORS from './constants/colors'
+import { MutableRefObject } from 'react'
 
-export interface CanvasDrawProps {
+export type ObservableContainerProps = {
+  style?: StyleProp<ViewStyle>
+}
+
+export type CanvasDrawProps = {
   onChange?: ((canvas: CanvasDraw) => void) | null | undefined
   loadTimeOffset?: number | undefined
   lazyRadius?: number | undefined
@@ -19,8 +26,7 @@ export interface CanvasDrawProps {
   immediateLoading?: boolean | undefined
   hideInterface?: boolean | undefined
   className?: string | undefined
-  style?: ViewStyle | undefined
-}
+} & Omit<ObservableContainerProps, 'height' | 'width'>
 
 interface CanvasDraw {
   /**
@@ -53,11 +59,19 @@ export type Line = {
 
 export type LineSettings = Partial<Pick<Line, 'brushRadius' | 'brushColor'>>
 
-export type CanvasTypes = 'interface' | 'drawing' | 'temp' | 'grid'
+export type CanvasTypes = 'interface' | 'persist' | 'temp' | 'background'
 export type CanvasTypesList = { name: CanvasTypes; zIndex: number }[]
 export type CanvasList = {
-  [name in CanvasTypes]: HTMLCanvasElement | null
+  [name in CanvasTypes]: MutableRefObject<HTMLCanvasElement | null>
 }
 export type ContextList = {
   [name in CanvasTypes]: CanvasRenderingContext2D | null
+}
+
+export type Colors = UnionFrom<typeof COLORS>
+
+export type CanvasLayer = {
+  ctx: CanvasRenderingContext2D | null
+  canvas: HTMLCanvasElement | null
+  isLoaded: boolean
 }
