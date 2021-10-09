@@ -6,11 +6,13 @@ import {
   windowWidth,
 } from '../constants'
 
-type UseLazyBrashProps = {
+type UseBrushProps = {
   lazyRadius: number
+  brushColor: string
+  brushRadius: number
 }
 
-export type LazyBrushInterface = ReturnType<typeof useLazyBrush>
+export type LazyBrushInterface = ReturnType<typeof useBrush>
 
 function createLazyBrush(lazyRadius: number) {
   return new LazyBrush({
@@ -23,7 +25,7 @@ function createLazyBrush(lazyRadius: number) {
   })
 }
 
-export function useLazyBrush({ lazyRadius }: UseLazyBrashProps) {
+export function useBrush({ lazyRadius, ...settings }: UseBrushProps) {
   const lazy = useRef<LazyBrush>(createLazyBrush(lazyRadius))
   const chainLength = lazyRadius * nativeDevicePixelRation
 
@@ -31,5 +33,5 @@ export function useLazyBrush({ lazyRadius }: UseLazyBrashProps) {
     lazy.current.setRadius(lazyRadius * nativeDevicePixelRation)
   }, [lazyRadius])
 
-  return { lazy, chainLength }
+  return { lazy, chainLength, ...settings }
 }

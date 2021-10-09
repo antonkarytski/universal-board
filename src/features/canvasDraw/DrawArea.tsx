@@ -1,19 +1,18 @@
-import React, { FC, useState } from 'react'
+import React, { FC, useRef, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import Canvas from './canvas/Canvas'
-import { CanvasDrawProps, CanvasList } from './types'
+import { CanvasDrawProps, CanvasList, Shape, SpecifiedShape } from './types'
 import { canvasTypes, windowHeight, windowWidth } from './constants'
-import { useCanvasInteractHandlers } from './hooks/interactHandlers'
-import { useLazyBrush } from './hooks/lazyBrush'
+import { useBrush } from './hooks/brush'
 import { useBackgroundLayer } from './hooks/layer.background'
 import { useInterfaceLayer } from './hooks/layer.interface'
 import { useDrawingLayers } from './hooks/layer.drawing'
 import ObservableContainer from './ObservableContainer'
+import { useShape } from './hooks/shape'
+import { Free } from './shapes/free'
 
 const DrawArea: FC<CanvasDrawProps> = React.memo(
   ({
-    //onChange = null,
-    //loadTimeOffset = 5,
     lazyRadius = 30,
     brushRadius = 10,
     brushColor = '#444',
@@ -23,16 +22,15 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
     canvasWidth = windowWidth,
     canvasHeight = windowHeight,
     hideGrid = false,
-    disabled = false,
     imgSrc = '',
-    saveData = '',
-    //immediateLoading = false,
     hideInterface = false,
     children,
     style,
   }) => {
     const [isLoaded, setIsLoaded] = useState(false)
-    const lazyBrush = useLazyBrush({ lazyRadius })
+    const cache = useRef<SpecifiedShape[]>([])
+    const brush = useBrush({ lazyRadius, brushRadius, brushColor })
+
     const { backgroundLayer } = useBackgroundLayer({
       isLoaded,
       gridColor,
@@ -41,14 +39,21 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
     })
     const { updateInterface, interfaceLayer } = useInterfaceLayer({
       isLoaded,
-      brushRadius,
-      brushColor,
       hideInterface,
       catenaryColor,
-      brush: lazyBrush,
+      brush,
     })
 
-    const { drawShape, saveShape, tempLayer, persistLayer } = useDrawingLayers()
+    const { tempLayer, persistLayer, tempCtx, persistCtx } = useDrawingLayers()
+
+    const { controller } = useShape(Free, {
+      onMove: updateInterface,
+      sizeCanvas: interfaceLayer,
+      persistCtx,
+      tempCtx,
+      cache,
+      brush,
+    })
 
     const layers: CanvasList = {
       temp: tempLayer,
@@ -56,18 +61,6 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
       interface: interfaceLayer,
       persist: persistLayer,
     }
-
-    const { handleDrawStart, handleDrawMove, handleDrawEnd } =
-      useCanvasInteractHandlers({
-        onFinish: saveShape,
-        onMove: updateInterface,
-        brushColor,
-        brushRadius,
-        disabled,
-        brush: lazyBrush,
-        controlCanvas: interfaceLayer,
-        onDraw: drawShape,
-      })
 
     const containerStyle = {
       backgroundColor,
@@ -79,6 +72,7 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
       <ObservableContainer style={[style, containerStyle]}>
         {canvasTypes.map(({ name, zIndex }) => {
           const isInterface = name === 'interface'
+          const canvasController = isInterface ? controller : {}
           return (
             <Canvas
               key={name}
@@ -95,16 +89,7 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
               style={[styles.canvas, { zIndex }]}
               width={canvasWidth}
               height={canvasHeight}
-              onTouchStart={isInterface ? handleDrawStart : () => {}}
-              onTouchMove={
-                isInterface
-                  ? (e) => {
-                      handleDrawMove(e)
-                    }
-                  : () => {}
-              }
-              onTouchEnd={isInterface ? handleDrawEnd : () => {}}
-              onTouchCancel={isInterface ? handleDrawEnd : () => {}}
+              {...canvasController}
             />
           )
         })}

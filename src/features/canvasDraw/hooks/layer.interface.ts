@@ -1,12 +1,9 @@
-import { MutableRefObject, useCallback, useEffect, useRef } from 'react'
-import { LazyBrush } from 'lazy-brush'
+import { useCallback, useEffect, useRef } from 'react'
 import { Catenary } from 'catenary-curve'
 import { useCanvasRef } from './canvas'
-import { LazyBrushInterface } from './lazyBrush'
+import { LazyBrushInterface } from './brush'
 
 type UseCanvasInterfaceDrawProps = {
-  brushColor: string
-  brushRadius: number
   catenaryColor: string
   hideInterface: boolean | undefined
   isLoaded: boolean
@@ -14,17 +11,13 @@ type UseCanvasInterfaceDrawProps = {
 }
 
 export function useInterfaceLayer({
-  brushColor,
-  brushRadius,
   catenaryColor,
   hideInterface,
-  brush: { lazy, chainLength },
+  brush: { lazy, chainLength, brushColor, brushRadius },
   isLoaded,
 }: UseCanvasInterfaceDrawProps) {
   const catenary = useRef(new Catenary())
   const { canvas, ctx: interfaceCtx } = useCanvasRef()
-  // const interfaceLayer = useRef<HTMLCanvasElement | null>(null)
-  // const interfaceCtx = useRef<CanvasRenderingContext2D | null>(null)
 
   const eraseInterface = useCallback(() => {
     if (!interfaceCtx.current || !canvas.current) return
@@ -92,5 +85,5 @@ export function useInterfaceLayer({
     updateInterface()
   }, [isLoaded, updateInterface])
 
-  return { updateInterface, interfaceLayer: canvas, interfaceCtx }
+  return { updateInterface, eraseInterface, interfaceLayer: canvas, interfaceCtx }
 }

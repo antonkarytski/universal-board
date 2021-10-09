@@ -1,4 +1,6 @@
 import { Coordinates } from 'lazy-brush'
+import { GestureResponderEvent } from 'react-native'
+import { MutableRefObject } from 'react'
 
 type DrawImageProps = {
   ctx: CanvasRenderingContext2D | null
@@ -90,4 +92,29 @@ function setCanvasSize(
   canvas.height = +height
   canvas.style.width = width + ''
   canvas.style.height = height + ''
+}
+
+export function getPointerPos(
+  e: GestureResponderEvent,
+  controlCanvas: MutableRefObject<HTMLCanvasElement | null>
+) {
+  let clientX = e.nativeEvent.locationX
+  let clientY = e.nativeEvent.locationY
+
+  if (e.nativeEvent.changedTouches && e.nativeEvent.changedTouches.length > 0) {
+    clientX = e.nativeEvent.changedTouches[0].locationX
+    clientY = e.nativeEvent.changedTouches[0].locationY
+  }
+
+  const rect = controlCanvas.current?.getBoundingClientRect()
+  if (!rect) {
+    return {
+      x: clientX,
+      y: clientY,
+    }
+  }
+  return {
+    x: clientX - rect.left,
+    y: clientY - rect.top,
+  }
 }
