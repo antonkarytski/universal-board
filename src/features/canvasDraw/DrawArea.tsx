@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react'
+import React, { FC, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import Canvas from './canvas/Canvas'
 import { CanvasDrawProps, CanvasList } from './types'
@@ -40,16 +40,15 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
       imgSrc,
     })
     const { updateInterface, interfaceLayer } = useInterfaceLayer({
+      isLoaded,
       brushRadius,
       brushColor,
       hideInterface,
       catenaryColor,
       brush: lazyBrush,
-      isLoaded,
     })
 
-    const { drawShape, saveShape, clear, tempLayer, persistLayer } =
-      useDrawingLayers()
+    const { drawShape, saveShape, tempLayer, persistLayer } = useDrawingLayers()
 
     const layers: CanvasList = {
       temp: tempLayer,
@@ -69,24 +68,6 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
         controlCanvas: interfaceLayer,
         onDraw: drawShape,
       })
-
-    useEffect(() => {
-      if (!isLoaded) return
-
-      setTimeout(() => {
-        const initX = canvasWidth / 2
-        const initY = canvasHeight / 2
-        lazyBrush.lazy.current?.update(
-          { x: initX - lazyBrush.chainLength / 4, y: initY },
-          { both: true }
-        )
-        lazyBrush.lazy.current?.update(
-          { x: initX + lazyBrush.chainLength / 4, y: initY },
-          { both: false }
-        )
-        clear()
-      }, 100)
-    }, [lazyBrush, isLoaded, clear, saveData, canvasHeight, canvasWidth])
 
     const containerStyle = {
       backgroundColor,

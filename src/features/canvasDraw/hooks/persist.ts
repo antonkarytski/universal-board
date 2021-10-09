@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 export function usePersist() {
   // const simulateDrawingLines = useCallback(
@@ -108,3 +108,29 @@ export function usePersist() {
   // 	//   })
   // }, [])
 }
+
+// useEffect(() => {
+//   if (!isLoaded) return
+//
+//   setTimeout(() => {
+//     const initX = canvasWidth / 2
+//     const initY = canvasHeight / 2
+//     lazyBrush.lazy.current?.update(
+//       { x: initX - lazyBrush.chainLength / 4, y: initY },
+//       { both: true }
+//     )
+//     lazyBrush.lazy.current?.update(
+//       { x: initX + lazyBrush.chainLength / 4, y: initY },
+//       { both: false }
+//     )
+//     clear()
+//   }, 100)
+// }, [
+//   lazyBrush.lazy,
+//   lazyBrush.chainLength,
+//   isLoaded,
+//   clear,
+//   saveData,
+//   canvasHeight,
+//   canvasWidth,
+// ])
