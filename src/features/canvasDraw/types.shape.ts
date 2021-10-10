@@ -13,7 +13,7 @@ type RepeatAction = (
 type DrawAction = (
   ctx: CanvasRenderingContext2D | null,
   point: Point[],
-  setting: BrushOptions
+  setting: BrushOptions & { width: number; height: number }
 ) => void
 
 type SaveAction = (

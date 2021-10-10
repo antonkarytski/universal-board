@@ -85,5 +85,10 @@ export function useInterfaceLayer({
     updateInterface()
   }, [isLoaded, updateInterface])
 
-  return { updateInterface, eraseInterface, interfaceLayer: canvas, interfaceCtx }
+  return {
+    updateInterface,
+    eraseInterface,
+    interfaceLayer: canvas,
+    interfaceCtx,
+  }
 }

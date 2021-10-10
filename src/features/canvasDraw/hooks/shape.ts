@@ -3,7 +3,8 @@ import { Point, Shape, SpecifiedShape } from '../types'
 import { GestureResponderEvent } from 'react-native'
 import { getPointerPos } from '../helpers'
 import { LazyBrushInterface } from './brush'
-import { ShapeInterface } from '../types.shapes'
+import { ShapeInterface } from '../types.shape'
+import { getWindowSize } from '../helpers/platform'
 
 export type UseShapeProps = {
   brush: LazyBrushInterface
@@ -38,6 +39,7 @@ export function useShape(
 
   function handlePointerMove(e: GestureResponderEvent) {
     const { x, y } = getPointerPos(e, sizeCanvas)
+    const sizes = sizeCanvas.current || getWindowSize()
     lazy.current.update({ x, y })
 
     if (isPressing.current && !isDrawing.current) {
@@ -60,6 +62,7 @@ export function useShape(
         onDrawStart(tempCtx.current, [...pointsCache.current], {
           brushColor,
           brushRadius,
+          ...sizes,
         })
       }
 
@@ -79,6 +82,7 @@ export function useShape(
       onDrawMove(tempCtx.current, [...pointsCache.current], {
         brushRadius,
         brushColor,
+        ...sizes,
       })
     }
 
@@ -97,6 +101,7 @@ export function useShape(
   }
 
   function onTouchEnd(e: GestureResponderEvent) {
+    const sizes = sizeCanvas.current || getWindowSize()
     e.preventDefault()
     isDrawing.current = false
     isPressing.current = false
@@ -105,6 +110,7 @@ export function useShape(
       onDrawEnd(tempCtx.current, points, {
         brushRadius,
         brushColor,
+        ...sizes,
       })
     }
     const shape: Shape = { points, brushRadius, brushColor }

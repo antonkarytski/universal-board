@@ -1,7 +1,7 @@
 import React, { FC, useRef, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import Canvas from './canvas/Canvas'
-import { CanvasDrawProps, CanvasList, Shape, SpecifiedShape } from './types'
+import { CanvasDrawProps, CanvasList, SpecifiedShape } from './types'
 import { canvasTypes, windowHeight, windowWidth } from './constants'
 import { useBrush } from './hooks/brush'
 import { useBackgroundLayer } from './hooks/layer.background'
@@ -10,11 +10,19 @@ import { useDrawingLayers } from './hooks/layer.drawing'
 import ObservableContainer from './ObservableContainer'
 import { useShape } from './hooks/shape'
 import { Free } from './shapes/free'
+import { Line } from './shapes/line'
+import { Circle } from './shapes/circle'
+import {
+  TriangleRight,
+  TriangleSymmetricHorizontal,
+  TriangleSymmetricVertical,
+} from './shapes/triangle'
+import { Rectangle } from './shapes/rectangle'
 
 const DrawArea: FC<CanvasDrawProps> = React.memo(
   ({
     lazyRadius = 30,
-    brushRadius = 10,
+    brushRadius = 5,
     brushColor = '#444',
     catenaryColor = '#0a0302',
     gridColor = 'rgba(150,150,150,0.17)',
@@ -46,7 +54,7 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
 
     const { tempLayer, persistLayer, tempCtx, persistCtx } = useDrawingLayers()
 
-    const { controller } = useShape(Free, {
+    const { controller } = useShape(Rectangle, {
       onMove: updateInterface,
       sizeCanvas: interfaceLayer,
       persistCtx,
