@@ -17,10 +17,11 @@ type CreateBaseShapeProps = {
 }
 
 export function createBaseShape({
+  name,
   draw,
 }: CreateBaseShapeProps): ShapeInterface {
   return {
-    name: '_circle',
+    name,
     isLazyAvailable: false,
     onDrawMove(ctx, points, { width, height, ...brushSettings }) {
       if (!ctx || points.length < 2) return

@@ -1,9 +1,31 @@
 import { useCanvasRef } from './canvas'
-import { useCallback } from 'react'
+import { MutableRefObject, useCallback } from 'react'
+import { useShape } from './shape'
+import { Free } from '../shapes/free'
+import { LazyBrushInterface } from './brush'
+import { SpecifiedShape } from '../types'
 
-export function useDrawingLayers() {
+type UseDrawingLayersProps = {
+  onMove: () => void
+  brush: LazyBrushInterface
+  cache: MutableRefObject<SpecifiedShape[]>
+}
+
+export function useDrawingLayers({
+  onMove,
+  brush,
+  cache,
+}: UseDrawingLayersProps) {
   const { canvas: persistLayer, ctx: persistCtx } = useCanvasRef()
   const { canvas: tempLayer, ctx: tempCtx } = useCanvasRef()
+  const { controller } = useShape(Free, {
+    onMove,
+    sizeCanvas: persistLayer,
+    persistCtx,
+    tempCtx,
+    cache,
+    brush,
+  })
 
   const clear = useCallback(() => {
     //linesCache.current = []
@@ -26,6 +48,7 @@ export function useDrawingLayers() {
   }, [tempCtx, tempLayer, persistCtx, persistLayer])
 
   return {
+    interactController: controller,
     clear,
     persistLayer,
     tempLayer,

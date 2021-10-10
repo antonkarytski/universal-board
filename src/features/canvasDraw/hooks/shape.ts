@@ -7,10 +7,10 @@ import { ShapeInterface } from '../types.shape'
 import { getWindowSize } from '../helpers/platform'
 
 export type UseShapeProps = {
-  brush: LazyBrushInterface
   tempCtx: MutableRefObject<CanvasRenderingContext2D | null>
   persistCtx: MutableRefObject<CanvasRenderingContext2D | null>
   sizeCanvas: MutableRefObject<HTMLCanvasElement | null>
+  brush: LazyBrushInterface
   cache: MutableRefObject<SpecifiedShape[]>
   onMove?: () => void
 }
@@ -60,6 +60,7 @@ export function useShape(
 
       if (onDrawStart) {
         onDrawStart(tempCtx.current, [...pointsCache.current], {
+          saveCtx: persistCtx.current,
           brushColor,
           brushRadius,
           ...sizes,
@@ -80,6 +81,7 @@ export function useShape(
       }
       pointsCache.current.push(point)
       onDrawMove(tempCtx.current, [...pointsCache.current], {
+        saveCtx: persistCtx.current,
         brushRadius,
         brushColor,
         ...sizes,
@@ -108,6 +110,7 @@ export function useShape(
     const points = [...pointsCache.current]
     if (onDrawEnd) {
       onDrawEnd(tempCtx.current, points, {
+        saveCtx: persistCtx.current,
         brushRadius,
         brushColor,
         ...sizes,

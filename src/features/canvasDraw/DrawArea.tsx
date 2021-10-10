@@ -1,4 +1,4 @@
-import React, { FC, useRef, useState } from 'react'
+import React, { FC, useEffect, useRef, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import Canvas from './canvas/Canvas'
 import { CanvasDrawProps, CanvasList, SpecifiedShape } from './types'
@@ -10,14 +10,15 @@ import { useDrawingLayers } from './hooks/layer.drawing'
 import ObservableContainer from './ObservableContainer'
 import { useShape } from './hooks/shape'
 import { Free } from './shapes/free'
-import { Line } from './shapes/line'
-import { Circle } from './shapes/circle'
-import {
-  TriangleRight,
-  TriangleSymmetricHorizontal,
-  TriangleSymmetricVertical,
-} from './shapes/triangle'
-import { Rectangle } from './shapes/rectangle'
+// import { Line } from './shapes/line'
+// import { Circle } from './shapes/circle'
+// import {
+//   TriangleRight,
+//   TriangleSymmetricHorizontal,
+//   TriangleSymmetricVertical,
+// } from './shapes/triangle'
+// import { Rectangle } from './shapes/rectangle'
+// import { Erase } from './shapes/erase'
 
 const DrawArea: FC<CanvasDrawProps> = React.memo(
   ({
@@ -52,16 +53,20 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
       brush,
     })
 
-    const { tempLayer, persistLayer, tempCtx, persistCtx } = useDrawingLayers()
-
-    const { controller } = useShape(Rectangle, {
+    const { tempLayer, persistLayer, interactController } = useDrawingLayers({
       onMove: updateInterface,
-      sizeCanvas: interfaceLayer,
-      persistCtx,
-      tempCtx,
-      cache,
       brush,
+      cache,
     })
+
+    // const { controller } = useShape(Free, {
+    //   onMove: updateInterface,
+    //   sizeCanvas: interfaceLayer,
+    //   persistCtx,
+    //   tempCtx,
+    //   cache,
+    //   brush,
+    // })
 
     const layers: CanvasList = {
       temp: tempLayer,
@@ -80,7 +85,7 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
       <ObservableContainer style={[style, containerStyle]}>
         {canvasTypes.map(({ name, zIndex }) => {
           const isInterface = name === 'interface'
-          const canvasController = isInterface ? controller : {}
+          const canvasController = isInterface ? interactController : {}
           return (
             <Canvas
               key={name}
@@ -90,7 +95,7 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
                   layers[name].current!.width = canvasWidth || windowWidth
                   layers[name].current!.height = canvasHeight || windowWidth
                   if (Object.values(layers).every((layer) => !!layer.current)) {
-                    if (!isLoaded) setIsLoaded(true)
+                    setIsLoaded(true)
                   }
                 }
               }}

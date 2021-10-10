@@ -4,6 +4,12 @@ type OnRepeatSettings = {
   withDelay?: boolean
 }
 
+type ActionSetting = BrushOptions & {
+  width: number
+  height: number
+  saveCtx: CanvasRenderingContext2D | null
+}
+
 type RepeatAction = (
   ctx: CanvasRenderingContext2D | null,
   shape: Shape,
@@ -13,7 +19,7 @@ type RepeatAction = (
 type DrawAction = (
   ctx: CanvasRenderingContext2D | null,
   point: Point[],
-  setting: BrushOptions & { width: number; height: number }
+  setting: ActionSetting
 ) => void
 
 type SaveAction = (

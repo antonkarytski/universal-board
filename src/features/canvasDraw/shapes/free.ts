@@ -2,8 +2,15 @@ import { Point } from '../types'
 import { midPointBtw } from '../helpers'
 import { ShapeInterface } from '../types.shape'
 import { setBrushSettings } from './_helpers'
+//import { setBrushSettings } from './_helpers'
 
-function draw(ctx: CanvasRenderingContext2D, p1: Point, p2: Point) {
+export type DrawFn = (
+  ctx: CanvasRenderingContext2D,
+  p1: Point,
+  p2: Point
+) => void
+
+export const penDraw: DrawFn = (ctx, p1, p2) => {
   const midPoint = midPointBtw(p1, p2)
   ctx.beginPath()
   ctx.moveTo(p1.x, p1.y)
@@ -18,12 +25,11 @@ export const Free: ShapeInterface = {
   onDrawMove(ctx, points, brushSettings) {
     if (!ctx) return
     setBrushSettings(ctx, brushSettings)
-
     const { length } = points
     if (length < 2) return
     const p1 = points[length - 2]
     const p2 = points[length - 1]
-    draw(ctx, p1, p2)
+    penDraw(ctx, p1, p2)
   },
   onRepeat(ctx, { points, ...brushSettings }) {
     if (!ctx) return
@@ -31,7 +37,7 @@ export const Free: ShapeInterface = {
     points.forEach((p2, index) => {
       if (index === 0) return
       const p1 = points[index - 1]
-      draw(ctx, p1, p2)
+      penDraw(ctx, p1, p2)
     })
   },
   onSave(ctx, { points, ...brushSettings }) {
@@ -40,7 +46,7 @@ export const Free: ShapeInterface = {
     points.forEach((p2, index) => {
       if (index === 0) return
       const p1 = points[index - 1]
-      draw(ctx, p1, p2)
+      penDraw(ctx, p1, p2)
     })
     return true
   },
