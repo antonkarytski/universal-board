@@ -11,25 +11,40 @@ type UseDrawingLayersProps = {
   brush: LazyBrushInterface
 }
 
+type ClearProps = {
+  preventSave?: boolean
+}
+
 export function useDrawingLayers({ onMove, brush }: UseDrawingLayersProps) {
   const persist = useCanvasRef()
   const { canvas: persistLayer, ctx: persistCtx } = persist
   const { canvas: tempLayer, ctx: tempCtx } = useCanvasRef()
 
-  const { cache, controller: historyController } = useDrawHistory(persist)
+  const { history, controller: historyController } = useDrawHistory(persist)
   const { controller: interactController } = useShape(Free, {
     sizeCanvas: persistLayer,
     persistCtx,
     tempCtx,
+    history,
     onMove,
-    cache,
     brush,
   })
 
-  const clear = useCallback(() => {
-    clearCanvas(tempLayer.current)
-    clearCanvas(persistLayer.current)
-  }, [tempLayer, persistLayer])
+  const clear = useCallback(
+    ({ preventSave }: ClearProps = {}) => {
+      clearCanvas(tempLayer.current)
+      clearCanvas(persistLayer.current)
+      if (preventSave) return
+      history.add({
+        name: '_clear',
+        special: true,
+        brushColor: '',
+        points: [],
+        brushRadius: 0,
+      })
+    },
+    [tempLayer, persistLayer, history]
+  )
 
   return {
     interactController,

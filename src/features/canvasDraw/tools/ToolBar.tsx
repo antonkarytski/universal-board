@@ -1,10 +1,5 @@
 import React from 'react'
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import ColorPicker from './ColorPicker/ColorPicker'
 import { Colors } from '../types'
 
@@ -13,6 +8,7 @@ type ToolBarProps = {
   onColorSelect: (color: Colors) => void
   onStepBack: () => void
   onStepForward: () => void
+  onClear: () => void
 }
 
 export default function ToolBar({
@@ -20,6 +16,7 @@ export default function ToolBar({
   currentColor,
   onStepBack,
   onStepForward,
+  onClear,
 }: ToolBarProps) {
   return (
     <>
@@ -30,6 +27,9 @@ export default function ToolBar({
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={onStepForward}>
           <Text style={styles.buttonText}>Forward</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={onClear}>
+          <Text style={styles.buttonText}>Clear</Text>
         </TouchableOpacity>
       </View>
     </>

@@ -1,7 +1,5 @@
 import { Point } from '../types'
-import { midPointBtw } from '../helpers'
-import { ShapeInterface } from '../types.shape'
-import { createBaseShape, setBrushSettings } from './_helpers'
+import { createBaseShape } from './_helpers'
 import { distanceBetween } from '../helpers/math'
 
 function draw(ctx: CanvasRenderingContext2D, points: Point[]) {

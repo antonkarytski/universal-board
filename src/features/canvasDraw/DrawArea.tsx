@@ -8,15 +8,7 @@ import { useBackgroundLayer } from './hooks/layer.background'
 import { useInterfaceLayer } from './hooks/layer.interface'
 import { useDrawingLayers } from './hooks/layer.drawing'
 import ObservableContainer from './ObservableContainer'
-// import { Line } from './shapes/line'
-// import { Circle } from './shapes/circle'
-// import {
-//   TriangleRight,
-//   TriangleSymmetricHorizontal,
-//   TriangleSymmetricVertical,
-// } from './shapes/triangle'
-// import { Rectangle } from './shapes/rectangle'
-// import { Erase } from './shapes/erase'
+import { useComponentWillMount } from './helpers/hooks'
 
 const DrawArea: FC<CanvasDrawProps> = React.memo(
   ({
@@ -33,6 +25,8 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
     hideInterface = false,
     children,
     style,
+    controller: boardController,
+    historyController: historyControllerRef,
   }) => {
     const [isLoaded, setIsLoaded] = useState(false)
 
@@ -51,19 +45,25 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
       catenaryColor,
     })
 
-    const { tempLayer, persistLayer, interactController } = useDrawingLayers({
+    const {
+      tempLayer,
+      persistLayer,
+      interactController,
+      historyController,
+      clear,
+    } = useDrawingLayers({
       onMove: updateInterface,
       brush,
     })
 
-    // const { controller } = useShape(Free, {
-    //   onMove: updateInterface,
-    //   sizeCanvas: interfaceLayer,
-    //   persistCtx,
-    //   tempCtx,
-    //   cache,
-    //   brush,
-    // })
+    useComponentWillMount(() => {
+      if (historyControllerRef) {
+        historyControllerRef.current = historyController
+      }
+      if (boardController) {
+        boardController.current = { clear }
+      }
+    })
 
     const layers: CanvasList = {
       temp: tempLayer,

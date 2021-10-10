@@ -18,7 +18,12 @@ export type HistoryController = {
   stepBack: () => void
 }
 
+export type ActionsController = {
+  clear: () => void
+}
+
 export type CanvasDrawProps = {
+  controller?: MutableRefObject<ActionsController | null>
   historyController?: MutableRefObject<HistoryController | null>
   brushRadius?: number | undefined
   brushColor?: string | undefined
@@ -51,6 +56,7 @@ export type Shape = {
 }
 
 export type SpecifiedShape = {
+  special?: boolean
   name: string
 } & Shape
 

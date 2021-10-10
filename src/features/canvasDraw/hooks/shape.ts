@@ -12,7 +12,7 @@ export type UseShapeProps = {
   persistCtx: MutableRefObject<CanvasRenderingContext2D | null>
   sizeCanvas: MutableRefObject<HTMLCanvasElement | null>
   brush: LazyBrushInterface
-  cache: CacheInterface
+  history: CacheInterface
   onMove?: () => void
 }
 
@@ -30,7 +30,7 @@ export function useShape(
     tempCtx,
     persistCtx,
     sizeCanvas,
-    cache,
+    history,
     brush: { lazy, brushColor, brushRadius },
   }: UseShapeProps
 ) {
@@ -122,7 +122,7 @@ export function useShape(
     if (result) {
       const namedShape =
         typeof result === 'boolean' ? { name, ...shape } : { name, ...result }
-      cache.add(namedShape)
+      history.add(namedShape)
     }
 
     const width = sizeCanvas.current?.width

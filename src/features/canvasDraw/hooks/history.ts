@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { SpecifiedShape } from '../types'
 import { CanvasInterface } from './canvas'
 import Shapes, { ShapeName } from '../shapes'
@@ -16,51 +16,67 @@ export function useCache() {
   }
 
   return {
-    ...cache,
-    currentIndex: currentIndex.current,
+    cache,
+    currentIndex,
     add,
   }
 }
 
 export type CacheInterface = ReturnType<typeof useCache>
 
-export function useDrawHistory({ clear, ctx }: CanvasInterface) {
-  const cache = useCache()
-  const currentPointIndex = useRef(-1)
+export function useDrawHistory(canvas: CanvasInterface) {
+  const history = useCache()
+  const { currentIndex: currentShapeIndex } = history
+  //const currentPointIndex = useRef(-1)
   const isPlaying = useRef(false)
-  const [isPlayingState, setIsPlayingState] = useState(false)
+  //const [isPlayingState, setIsPlayingState] = useState(false)
 
   function pause() {
     isPlaying.current = false
-    setIsPlayingState(false)
+    //setIsPlayingState(false)
   }
 
   function stepBack() {
-    if (cache.currentIndex === -1) return
+    if (currentShapeIndex.current === -1) return
     pause()
-    clear()
-    cache.current
-      .slice(0, currentPointIndex.current + 1)
-      .forEach(({ name, ...shape }) => {
-        Shapes[name as ShapeName].onRepeat(ctx.current, shape)
-      })
+    canvas.clear()
+
+    setTimeout(() => {
+      history.cache.current
+        .slice(0, currentShapeIndex.current)
+        .forEach((shape) => shapeHandler(canvas, shape))
+      currentShapeIndex.current -= 1
+    }, 10)
   }
 
   function stepForward() {
-    if (cache.currentIndex >= cache.current.length - 1) return
+    if (currentShapeIndex.current >= history.cache.current.length - 1) return
     pause()
-    const { name, ...shape } = cache.current[cache.currentIndex + 1]
-    Shapes[name as ShapeName].onRepeat(ctx.current, shape)
-    currentPointIndex.current = cache.currentIndex + 1
+    const shape = history.cache.current[currentShapeIndex.current + 1]
+    shapeHandler(canvas, shape)
+    currentShapeIndex.current += 1
   }
 
   return {
-    cache,
+    history,
     controller: {
       stepBack,
       stepForward,
     },
   }
+}
+
+function shapeHandler(
+  { ctx, clear }: CanvasInterface,
+  { name, special, ...shape }: SpecifiedShape
+) {
+  if (special) {
+    if (name === '_clear') {
+      clear()
+    }
+    return
+  }
+  Shapes[name as ShapeName].onRepeat(ctx.current, shape)
 }
 
 //Navigation inside shape back
