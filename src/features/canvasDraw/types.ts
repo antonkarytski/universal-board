@@ -13,24 +13,31 @@ export type BrushOptions = {
   brushRadius: number
 }
 
+export type HistoryController = {
+  stepForward: () => void
+  stepBack: () => void
+}
+
 export type CanvasDrawProps = {
-  loadTimeOffset?: number | undefined
-  lazyRadius?: number | undefined
+  historyController?: MutableRefObject<HistoryController | null>
   brushRadius?: number | undefined
   brushColor?: string | undefined
-  catenaryColor?: string | undefined
+  lazyRadius?: number | undefined
   gridColor?: string | undefined
   backgroundColor?: string | undefined
   hideGrid?: boolean | undefined
+  catenaryColor?: string | undefined
   canvasWidth?: number | undefined
   canvasHeight?: number | undefined
-  disabled?: boolean | undefined
-  imgSrc?: string | undefined
-  saveData?: string | undefined
-  immediateLoading?: boolean | undefined
   hideInterface?: boolean | undefined
-  className?: string | undefined
-} & Omit<ObservableContainerProps, 'height' | 'width'>
+  imgSrc?: string | undefined
+
+  //saveData?: string | undefined
+  //immediateLoading?: boolean | undefined
+  //className?: string | undefined
+  //disabled?: boolean | undefined
+  //loadTimeOffset?: number | undefined
+} & ObservableContainerProps
 
 export type Point = {
   timeStamp: number

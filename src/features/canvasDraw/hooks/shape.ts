@@ -1,17 +1,18 @@
 import { MutableRefObject, useRef } from 'react'
-import { Point, Shape, SpecifiedShape } from '../types'
+import { Point, Shape } from '../types'
 import { GestureResponderEvent } from 'react-native'
 import { getPointerPos } from '../helpers'
 import { LazyBrushInterface } from './brush'
 import { ShapeInterface } from '../types.shape'
 import { getWindowSize } from '../helpers/platform'
+import { CacheInterface } from './history'
 
 export type UseShapeProps = {
   tempCtx: MutableRefObject<CanvasRenderingContext2D | null>
   persistCtx: MutableRefObject<CanvasRenderingContext2D | null>
   sizeCanvas: MutableRefObject<HTMLCanvasElement | null>
   brush: LazyBrushInterface
-  cache: MutableRefObject<SpecifiedShape[]>
+  cache: CacheInterface
   onMove?: () => void
 }
 
@@ -121,7 +122,7 @@ export function useShape(
     if (result) {
       const namedShape =
         typeof result === 'boolean' ? { name, ...shape } : { name, ...result }
-      cache.current.push(namedShape)
+      cache.add(namedShape)
     }
 
     const width = sizeCanvas.current?.width

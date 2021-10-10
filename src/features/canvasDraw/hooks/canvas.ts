@@ -1,4 +1,5 @@
-import { useRef } from 'react'
+import { useCallback, useRef } from 'react'
+import { clearCanvas } from '../helpers'
 
 export function useCanvasRef() {
   const canvas = useRef<HTMLCanvasElement | null>(null)
@@ -7,5 +8,12 @@ export function useCanvasRef() {
     ctx.current = canvas.current.getContext('2d')
   }
 
-  return { canvas, ctx }
+  const clear = useCallback(() => {
+    if (!canvas.current) return
+    clearCanvas(canvas.current)
+  }, [])
+
+  return { canvas, ctx, clear }
 }
+
+export type CanvasInterface = ReturnType<typeof useCanvasRef>

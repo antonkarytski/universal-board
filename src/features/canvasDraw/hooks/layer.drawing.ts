@@ -1,54 +1,39 @@
-import { useCanvasRef } from './canvas'
-import { MutableRefObject, useCallback } from 'react'
-import { useShape } from './shape'
-import { Free } from '../shapes/free'
 import { LazyBrushInterface } from './brush'
-import { SpecifiedShape } from '../types'
+import { useDrawHistory } from './history'
+import { clearCanvas } from '../helpers'
+import { useCanvasRef } from './canvas'
+import { Free } from '../shapes/free'
+import { useCallback } from 'react'
+import { useShape } from './shape'
 
 type UseDrawingLayersProps = {
   onMove: () => void
   brush: LazyBrushInterface
-  cache: MutableRefObject<SpecifiedShape[]>
 }
 
-export function useDrawingLayers({
-  onMove,
-  brush,
-  cache,
-}: UseDrawingLayersProps) {
-  const { canvas: persistLayer, ctx: persistCtx } = useCanvasRef()
+export function useDrawingLayers({ onMove, brush }: UseDrawingLayersProps) {
+  const persist = useCanvasRef()
+  const { canvas: persistLayer, ctx: persistCtx } = persist
   const { canvas: tempLayer, ctx: tempCtx } = useCanvasRef()
-  const { controller } = useShape(Free, {
-    onMove,
+
+  const { cache, controller: historyController } = useDrawHistory(persist)
+  const { controller: interactController } = useShape(Free, {
     sizeCanvas: persistLayer,
     persistCtx,
     tempCtx,
+    onMove,
     cache,
     brush,
   })
 
   const clear = useCallback(() => {
-    //linesCache.current = []
-    if (persistCtx.current) {
-      persistCtx.current.clearRect(
-        0,
-        0,
-        persistLayer.current?.width || 400,
-        persistLayer.current?.height || 400
-      )
-    }
-    if (tempCtx.current) {
-      tempCtx.current.clearRect(
-        0,
-        0,
-        tempLayer.current?.width || 400,
-        tempLayer.current?.height || 400
-      )
-    }
-  }, [tempCtx, tempLayer, persistCtx, persistLayer])
+    clearCanvas(tempLayer.current)
+    clearCanvas(persistLayer.current)
+  }, [tempLayer, persistLayer])
 
   return {
-    interactController: controller,
+    interactController,
+    historyController,
     clear,
     persistLayer,
     tempLayer,

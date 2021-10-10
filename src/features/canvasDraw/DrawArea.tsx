@@ -1,15 +1,13 @@
-import React, { FC, useEffect, useRef, useState } from 'react'
+import React, { FC, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import Canvas from './canvas/Canvas'
-import { CanvasDrawProps, CanvasList, SpecifiedShape } from './types'
+import { CanvasDrawProps, CanvasList } from './types'
 import { canvasTypes, windowHeight, windowWidth } from './constants'
 import { useBrush } from './hooks/brush'
 import { useBackgroundLayer } from './hooks/layer.background'
 import { useInterfaceLayer } from './hooks/layer.interface'
 import { useDrawingLayers } from './hooks/layer.drawing'
 import ObservableContainer from './ObservableContainer'
-import { useShape } from './hooks/shape'
-import { Free } from './shapes/free'
 // import { Line } from './shapes/line'
 // import { Circle } from './shapes/circle'
 // import {
@@ -37,7 +35,7 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
     style,
   }) => {
     const [isLoaded, setIsLoaded] = useState(false)
-    const cache = useRef<SpecifiedShape[]>([])
+
     const brush = useBrush({ lazyRadius, brushRadius, brushColor })
 
     const { backgroundLayer } = useBackgroundLayer({
@@ -47,16 +45,15 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
       imgSrc,
     })
     const { updateInterface, interfaceLayer } = useInterfaceLayer({
+      brush,
       isLoaded,
       hideInterface,
       catenaryColor,
-      brush,
     })
 
     const { tempLayer, persistLayer, interactController } = useDrawingLayers({
       onMove: updateInterface,
       brush,
-      cache,
     })
 
     // const { controller } = useShape(Free, {

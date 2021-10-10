@@ -9,7 +9,7 @@ import {
 import { Rectangle } from './rectangle'
 import { Line } from './line'
 
-export default {
+const Shapes = {
   _free: Free,
   _erase: Erase,
   _line: Line,
@@ -19,3 +19,6 @@ export default {
   _triangleSymmetricVertical: TriangleSymmetricVertical,
   _triangleSymmetricHorizontal: TriangleSymmetricHorizontal,
 }
+
+export type ShapeName = keyof typeof Shapes
+export default Shapes
