@@ -8,6 +8,7 @@ import {
 } from './triangle'
 import { Rectangle } from './rectangle'
 import { Line } from './line'
+import { dummyShape } from './_helpers'
 
 const Shapes = {
   _free: Free,
@@ -18,6 +19,7 @@ const Shapes = {
   _triangleRight: TriangleRight,
   _triangleSymmetricVertical: TriangleSymmetricVertical,
   _triangleSymmetricHorizontal: TriangleSymmetricHorizontal,
+  _text: dummyShape('_text'),
 }
 
 export type ShapeName = keyof typeof Shapes

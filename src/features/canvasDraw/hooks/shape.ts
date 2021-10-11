@@ -18,11 +18,12 @@ export type UseShapeProps = {
 export function useShape(
   {
     name,
+    isLazyAvailable,
     onDrawStart,
     onDrawMove,
     onDrawEnd,
     onSave,
-    isLazyAvailable,
+    onDrawText,
   }: ShapeInterface,
   {
     onMove,

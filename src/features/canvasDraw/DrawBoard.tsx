@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react'
 import DrawArea from './DrawArea'
-import ToolBar from './tools/ToolBar'
+import ToolBar from './features/tools/ToolBar'
 import { GREY } from './constants/colors'
 import { ActionsController, Colors, HistoryController } from './types'
 import Shapes, { ShapeName } from './shapes'

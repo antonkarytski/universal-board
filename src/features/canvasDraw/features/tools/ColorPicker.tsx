@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import * as COLORS from '../../constants/colors'
 import ColorPickerItem from './ColorPickerItem'
 import { StyleSheet } from 'react-native'
@@ -35,25 +35,3 @@ export default function ColorPicker({
     </PalletTool>
   )
 }
-
-const styles = StyleSheet.create({
-  openButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-  },
-
-  palletContainer: {
-    width: 160,
-    flexWrap: 'wrap',
-    //height: 200,
-    position: 'absolute',
-    top: 6,
-    flexDirection: 'row',
-    backgroundColor: 'white',
-    padding: 10,
-    borderRadius: 10,
-    right: 70,
-    elevation: 2,
-  },
-})

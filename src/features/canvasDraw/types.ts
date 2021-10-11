@@ -1,4 +1,7 @@
-import { StyleProp, ViewStyle } from 'react-native'
+import {
+  StyleProp,
+  ViewStyle,
+} from 'react-native'
 import { Coordinates } from 'lazy-brush'
 import { UnionFrom } from './helpers/types'
 import * as COLORS from './constants/colors'
@@ -54,17 +57,15 @@ export type Shape = {
   brushColor: string
   brushRadius: number
   points: Point[]
-}
-
-export type SpecifiedShape = {
-  special?: boolean
-  name: string
   options?: {
     [key: string]: any
   }
-} & Shape
+}
 
-export type LineSettings = Partial<Pick<Shape, 'brushRadius' | 'brushColor'>>
+export type SpecifiedShape = {
+  name: string
+  special?: boolean
+} & Shape
 
 export type CanvasTypes = 'interface' | 'persist' | 'temp' | 'background'
 export type CanvasTypesList = { name: CanvasTypes; zIndex: number }[]
@@ -78,28 +79,34 @@ export type CanvasLayer = {
   canvas: HTMLCanvasElement | null
   isLoaded: boolean
 }
+
 type OnRepeatSettings = {
   withDelay?: boolean
 }
+
 type ActionSetting = BrushOptions & {
   width: number
   height: number
   saveCtx: CanvasRenderingContext2D | null
 }
+
 type RepeatAction = (
   ctx: CanvasRenderingContext2D | null,
   shape: Shape,
   settings?: OnRepeatSettings
 ) => void
+
 type DrawAction = (
   ctx: CanvasRenderingContext2D | null,
   point: Point[],
   setting: ActionSetting
 ) => void
+
 type SaveAction = (
   ctx: CanvasRenderingContext2D | null,
   shape: Shape
 ) => false | Shape | void
+
 export type ShapeInterface = {
   name: string
   isLazyAvailable?: boolean
@@ -109,4 +116,19 @@ export type ShapeInterface = {
   onDrawEnd?: DrawAction
   onRepeat: RepeatAction
   onSave: SaveAction
-}
+  onDrawText?: (text: string) => void
+} & (
+  | {
+      steps?: undefined | 1
+    }
+  | {
+      steps: number
+      stepsActions: {
+        onDrawStart?: DrawAction
+        onDrawMove: DrawAction
+        onDrawEnd?: DrawAction
+        onRepeat: RepeatAction
+        onSave: SaveAction
+      }[]
+    }
+)

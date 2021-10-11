@@ -10,6 +10,7 @@ import { useInterfaceLayer } from './hooks/layer.interface'
 import { useDrawingLayers } from './hooks/layer.drawing'
 import { useComponentWillMount } from './helpers/hooks'
 import Shapes from './shapes'
+import TextShape from './features/TextShape'
 
 const DrawArea: FC<CanvasDrawProps> = React.memo(
   ({
@@ -31,7 +32,6 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
     historyController: historyControllerRef,
   }) => {
     const [isLoaded, setIsLoaded] = useState(false)
-
     const brush = useBrush({ lazyRadius, brushRadius, brushColor })
 
     const { backgroundLayer } = useBackgroundLayer({
@@ -81,6 +81,16 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
       height: canvasHeight,
     }
 
+    // useEffect(() => {
+    //   if (!isTextMode && shape.name === '_text') {
+    //     setTextMode(true)
+    //     return
+    //   }
+    //   if (isTextMode && shape.name !== 'text') {
+    //     setTextMode(false)
+    //   }
+    // }, [shape, isTextMode])
+
     return (
       <ObservableContainer style={[style, containerStyle]}>
         {canvasTypes.map(({ name, zIndex }) => {
@@ -106,6 +116,7 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
             />
           )
         })}
+        <TextShape />
         {children}
       </ObservableContainer>
     )

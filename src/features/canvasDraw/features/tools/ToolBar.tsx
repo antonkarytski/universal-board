@@ -1,9 +1,9 @@
 import React from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import ColorPicker from './ColorPicker/ColorPicker'
-import { Colors } from '../types'
-import ShapePicker from './ShapePicker/ShapePicker'
-import { ShapeName } from '../shapes'
+import ColorPicker from './ColorPicker'
+import { Colors } from '../../types'
+import ShapePicker from './ShapePicker'
+import { ShapeName } from '../../shapes'
 
 type ToolBarProps = {
   currentColor: Colors

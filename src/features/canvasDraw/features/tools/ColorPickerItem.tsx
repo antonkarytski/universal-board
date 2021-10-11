@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, TouchableOpacity } from 'react-native'
 
 type ColorPickerItemProps = {
   color: string
@@ -9,7 +9,6 @@ type ColorPickerItemProps = {
 
 export default function ColorPickerItem({
   color,
-  isActive,
   onSelect,
 }: ColorPickerItemProps) {
   const buttonColor = {

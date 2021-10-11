@@ -40,3 +40,13 @@ export function createBaseShape({
     },
   }
 }
+
+export function dummyShape(name: string): ShapeInterface {
+  return {
+    name,
+    isLazyAvailable: false,
+    onDrawMove() {},
+    onRepeat() {},
+    onSave() {},
+  }
+}
