@@ -2,10 +2,14 @@ import React from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import ColorPicker from './ColorPicker/ColorPicker'
 import { Colors } from '../types'
+import ShapePicker from './ShapePicker/ShapePicker'
+import { ShapeName } from '../shapes'
 
 type ToolBarProps = {
   currentColor: Colors
   onColorSelect: (color: Colors) => void
+  currentShape: ShapeName
+  onShapeSelect: (shape: ShapeName) => void
   onStepBack: () => void
   onStepForward: () => void
   onClear: () => void
@@ -14,6 +18,8 @@ type ToolBarProps = {
 export default function ToolBar({
   onColorSelect,
   currentColor,
+  onShapeSelect,
+  currentShape,
   onStepBack,
   onStepForward,
   onClear,
@@ -22,6 +28,7 @@ export default function ToolBar({
     <>
       <View style={styles.container}>
         <ColorPicker onSelect={onColorSelect} currentColor={currentColor} />
+        <ShapePicker currentShape={currentShape} onSelect={onShapeSelect} />
         <TouchableOpacity style={styles.button} onPress={onStepBack}>
           <Text style={styles.buttonText}>Back</Text>
         </TouchableOpacity>

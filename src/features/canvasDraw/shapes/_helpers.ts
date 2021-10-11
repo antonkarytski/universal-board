@@ -1,5 +1,4 @@
-import { BrushOptions, Point } from '../types'
-import { ShapeInterface } from '../types.shape'
+import { BrushOptions, Point, ShapeInterface } from '../types'
 
 export function setBrushSettings(
   ctx: CanvasRenderingContext2D,

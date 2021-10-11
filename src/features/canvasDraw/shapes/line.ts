@@ -1,5 +1,4 @@
-import { Point } from '../types'
-import { ShapeInterface } from '../types.shape'
+import { Point, ShapeInterface } from '../types'
 import { createBaseShape, setBrushSettings } from './_helpers'
 
 function draw(ctx: CanvasRenderingContext2D, points: Point[]) {

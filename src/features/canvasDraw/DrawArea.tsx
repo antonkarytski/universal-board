@@ -1,17 +1,19 @@
 import React, { FC, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import Canvas from './canvas/Canvas'
+import ObservableContainer from './ObservableContainer'
 import { CanvasDrawProps, CanvasList } from './types'
 import { canvasTypes, windowHeight, windowWidth } from './constants'
 import { useBrush } from './hooks/brush'
 import { useBackgroundLayer } from './hooks/layer.background'
 import { useInterfaceLayer } from './hooks/layer.interface'
 import { useDrawingLayers } from './hooks/layer.drawing'
-import ObservableContainer from './ObservableContainer'
 import { useComponentWillMount } from './helpers/hooks'
+import Shapes from './shapes'
 
 const DrawArea: FC<CanvasDrawProps> = React.memo(
   ({
+    shape = Shapes._free,
     lazyRadius = 30,
     brushRadius = 5,
     brushColor = '#444',
@@ -54,6 +56,7 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
     } = useDrawingLayers({
       onMove: updateInterface,
       brush,
+      shape,
     })
 
     useComponentWillMount(() => {
@@ -89,8 +92,8 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
               canvasRef={(canvasRef) => {
                 if (canvasRef) {
                   layers[name].current = canvasRef
-                  layers[name].current!.width = canvasWidth || windowWidth
-                  layers[name].current!.height = canvasHeight || windowWidth
+                  layers[name].current!.width = canvasWidth
+                  layers[name].current!.height = canvasHeight
                   if (Object.values(layers).every((layer) => !!layer.current)) {
                     setIsLoaded(true)
                   }
@@ -107,8 +110,20 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
       </ObservableContainer>
     )
   },
-  ({ children, ...prevProps }, { children: nextChildren, ...nextProps }) => {
-    return JSON.stringify(prevProps) === JSON.stringify(nextProps)
+  (
+    { children, shape, controller, historyController, ...prevProps },
+    {
+      children: nextChildren,
+      shape: nextShape,
+      controller: nextController,
+      historyController: nextHistoryController,
+      ...nextProps
+    }
+  ) => {
+    return (
+      JSON.stringify(prevProps) === JSON.stringify(nextProps) &&
+      shape === nextShape
+    )
   }
 )
 

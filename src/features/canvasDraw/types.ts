@@ -23,6 +23,7 @@ export type ActionsController = {
 }
 
 export type CanvasDrawProps = {
+  shape?: ShapeInterface
   controller?: MutableRefObject<ActionsController | null>
   historyController?: MutableRefObject<HistoryController | null>
   brushRadius?: number | undefined
@@ -58,6 +59,9 @@ export type Shape = {
 export type SpecifiedShape = {
   special?: boolean
   name: string
+  options?: {
+    [key: string]: any
+  }
 } & Shape
 
 export type LineSettings = Partial<Pick<Shape, 'brushRadius' | 'brushColor'>>
@@ -73,4 +77,36 @@ export type CanvasLayer = {
   ctx: CanvasRenderingContext2D | null
   canvas: HTMLCanvasElement | null
   isLoaded: boolean
+}
+type OnRepeatSettings = {
+  withDelay?: boolean
+}
+type ActionSetting = BrushOptions & {
+  width: number
+  height: number
+  saveCtx: CanvasRenderingContext2D | null
+}
+type RepeatAction = (
+  ctx: CanvasRenderingContext2D | null,
+  shape: Shape,
+  settings?: OnRepeatSettings
+) => void
+type DrawAction = (
+  ctx: CanvasRenderingContext2D | null,
+  point: Point[],
+  setting: ActionSetting
+) => void
+type SaveAction = (
+  ctx: CanvasRenderingContext2D | null,
+  shape: Shape
+) => true | Shape | void
+export type ShapeInterface = {
+  name: string
+  isLazyAvailable?: boolean
+  helperAvailable?: boolean
+  onDrawStart?: DrawAction
+  onDrawMove: DrawAction
+  onDrawEnd?: DrawAction
+  onRepeat: RepeatAction
+  onSave: SaveAction
 }

@@ -1,5 +1,4 @@
-import { Point } from '../types'
-import { ShapeInterface } from '../types.shape'
+import { Point, ShapeInterface } from '../types'
 import { setBrushSettings } from './_helpers'
 import { Coordinates } from 'lazy-brush'
 
@@ -71,7 +70,6 @@ const symmetricHorizontal: PointGenerator = (p1, p2) => ({
   x: p2.x,
   y: 2 * p1.y - p2.y,
 })
-
 export const TriangleSymmetricHorizontal = createTriangle({
   name: '_triangleSymmetricVertical',
   thirdPoint: symmetricHorizontal,

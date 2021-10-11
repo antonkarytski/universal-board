@@ -2,26 +2,32 @@ import { LazyBrushInterface } from './brush'
 import { useDrawHistory } from './history'
 import { clearCanvas } from '../helpers'
 import { useCanvasRef } from './canvas'
-import { Free } from '../shapes/free'
 import { useCallback } from 'react'
 import { useShape } from './shape'
+import { ShapeInterface } from '../types'
+import { createSpecialShape } from '../helpers/shapes'
 
 type UseDrawingLayersProps = {
   onMove: () => void
   brush: LazyBrushInterface
+  shape: ShapeInterface
 }
 
 type ClearProps = {
   preventSave?: boolean
 }
 
-export function useDrawingLayers({ onMove, brush }: UseDrawingLayersProps) {
+export function useDrawingLayers({
+  onMove,
+  brush,
+  shape,
+}: UseDrawingLayersProps) {
   const persist = useCanvasRef()
   const { canvas: persistLayer, ctx: persistCtx } = persist
   const { canvas: tempLayer, ctx: tempCtx } = useCanvasRef()
 
   const { history, controller: historyController } = useDrawHistory(persist)
-  const { controller: interactController } = useShape(Free, {
+  const { controller: interactController } = useShape(shape, {
     sizeCanvas: persistLayer,
     persistCtx,
     tempCtx,
@@ -35,13 +41,7 @@ export function useDrawingLayers({ onMove, brush }: UseDrawingLayersProps) {
       clearCanvas(tempLayer.current)
       clearCanvas(persistLayer.current)
       if (preventSave) return
-      history.add({
-        name: '_clear',
-        special: true,
-        brushColor: '',
-        points: [],
-        brushRadius: 0,
-      })
+      history.add(createSpecialShape({ name: '_clear' }))
     },
     [tempLayer, persistLayer, history]
   )

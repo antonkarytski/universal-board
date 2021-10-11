@@ -1,6 +1,5 @@
-import { Point } from '../types'
+import { Point, ShapeInterface } from '../types'
 import { midPointBtw } from '../helpers'
-import { ShapeInterface } from '../types.shape'
 import { setBrushSettings } from './_helpers'
 //import { setBrushSettings } from './_helpers'
 

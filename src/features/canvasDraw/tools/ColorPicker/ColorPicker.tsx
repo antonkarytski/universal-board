@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import * as COLORS from '../../constants/colors'
 import ColorPickerItem from './ColorPickerItem'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet } from 'react-native'
 import { Colors } from '../../types'
+import PalletTool from '../../ui/PalletTool'
 
 type ColorPickerProps = {
   onSelect: (color: Colors) => void
@@ -15,34 +16,23 @@ export default function ColorPicker({
   onSelect,
   currentColor,
 }: ColorPickerProps) {
-  const [isActive, setIsActive] = useState(false)
-
   const buttonColor = {
     backgroundColor: currentColor,
   }
 
   return (
-    <>
-      <TouchableOpacity
-        style={[styles.openButton, buttonColor]}
-        onPress={() => setIsActive((state) => !state)}
-      />
-
-      {isActive ? (
-        <View style={styles.palletContainer}>
-          {COLORS_LIST.map((color) => {
-            return (
-              <ColorPickerItem
-                color={color}
-                isActive={currentColor === color}
-                onSelect={() => onSelect(color)}
-                key={color}
-              />
-            )
-          })}
-        </View>
-      ) : null}
-    </>
+    <PalletTool list={COLORS_LIST} style={buttonColor}>
+      {(color) => {
+        return (
+          <ColorPickerItem
+            color={color}
+            isActive={currentColor === color}
+            onSelect={() => onSelect(color)}
+            key={color}
+          />
+        )
+      }}
+    </PalletTool>
   )
 }
 

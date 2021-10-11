@@ -1,6 +1,6 @@
-import { ShapeInterface } from '../types.shape'
 import { setBrushSettings } from './_helpers'
 import { DrawFn, penDraw } from './free'
+import { ShapeInterface } from '../types'
 
 const eraseDraw: DrawFn = (ctx, p1, p2) => {
   ctx.globalCompositeOperation = 'destination-out'

@@ -1,8 +1,8 @@
 import { useCallback, useEffect } from 'react'
 import { CanvasLayer } from '../types'
-import UniImage from '../canvas/UniImage'
 import { drawImage } from '../helpers'
 import { useCanvasRef } from './canvas'
+import UniImage from '../canvas/UniImage'
 
 type UseGridProps = Omit<CanvasLayer, 'isLoaded'>
 

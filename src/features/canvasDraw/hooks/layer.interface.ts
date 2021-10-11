@@ -26,12 +26,7 @@ export function useInterfaceLayer({
   }, [canvas, interfaceCtx])
 
   const updateInterface = useCallback(() => {
-    if (
-      hideInterface ||
-      !lazy.current ||
-      !interfaceCtx.current ||
-      !canvas.current
-    ) {
+    if (hideInterface || !interfaceCtx.current || !canvas.current) {
       return
     }
     const { width, height } = canvas.current

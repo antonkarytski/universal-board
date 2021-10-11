@@ -3,6 +3,7 @@ import DrawArea from './DrawArea'
 import ToolBar from './tools/ToolBar'
 import { GREY } from './constants/colors'
 import { ActionsController, Colors, HistoryController } from './types'
+import Shapes, { ShapeName } from './shapes'
 
 const dummyHistoryController: HistoryController = {
   stepBack() {},
@@ -17,6 +18,7 @@ export default function DrawBoard() {
   const [brushColor, setBrushColor] = useState<Colors>(GREY)
   const historyController = useRef(dummyHistoryController)
   const boardController = useRef(dummyBoardController)
+  const [currentShape, setCurrentShape] = useState<ShapeName>('_line')
 
   return (
     <>
@@ -24,10 +26,13 @@ export default function DrawBoard() {
         brushColor={brushColor}
         historyController={historyController}
         controller={boardController}
+        shape={Shapes[currentShape]}
       >
         <ToolBar
           currentColor={brushColor}
           onColorSelect={setBrushColor}
+          currentShape={currentShape}
+          onShapeSelect={setCurrentShape}
           onStepBack={() => historyController.current.stepBack()}
           onStepForward={() => historyController.current.stepForward()}
           onClear={() => boardController.current.clear()}

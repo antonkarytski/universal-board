@@ -1,9 +1,8 @@
 import { MutableRefObject, useRef } from 'react'
-import { Point, Shape } from '../types'
+import { Point, Shape, ShapeInterface } from '../types'
 import { GestureResponderEvent } from 'react-native'
 import { getPointerPos } from '../helpers'
 import { LazyBrushInterface } from './brush'
-import { ShapeInterface } from '../types.shape'
 import { getWindowSize } from '../helpers/platform'
 import { CacheInterface } from './history'
 

@@ -8,6 +8,7 @@ import {
 } from './triangle'
 import { Rectangle } from './rectangle'
 import { Line } from './line'
+import { ShapeInterface } from '../types'
 
 const Shapes = {
   _free: Free,
