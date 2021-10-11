@@ -5,7 +5,7 @@ import { useCanvasRef } from './canvas'
 import { useCallback } from 'react'
 import { useShape } from './shape'
 import { ShapeInterface } from '../types'
-import { createSpecialShape } from '../helpers/shapes'
+import { createSpecialShapeRecord } from '../helpers/shapes'
 
 type UseDrawingLayersProps = {
   onMove: () => void
@@ -41,7 +41,7 @@ export function useDrawingLayers({
       clearCanvas(tempLayer.current)
       clearCanvas(persistLayer.current)
       if (preventSave) return
-      history.add(createSpecialShape({ name: '_clear' }))
+      history.add(createSpecialShapeRecord({ name: '_clear' }))
     },
     [tempLayer, persistLayer, history]
   )

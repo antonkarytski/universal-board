@@ -5,7 +5,7 @@ type CreateDummyShapeProps = {
   options?: { [key: string]: any }
 }
 
-export function createSpecialShape({
+export function createSpecialShapeRecord({
   name,
   options,
 }: CreateDummyShapeProps): SpecifiedShape {

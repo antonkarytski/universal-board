@@ -43,10 +43,9 @@ function createTriangle({
       draw(ctx, points, thirdPoint)
     },
     onSave(ctx, { points, ...brushSettings }) {
-      if (!ctx || points.length < 2) return
+      if (!ctx || points.length < 2) return false
       setBrushSettings(ctx, brushSettings)
       draw(ctx, points, thirdPoint)
-      return true
     },
   }
 }

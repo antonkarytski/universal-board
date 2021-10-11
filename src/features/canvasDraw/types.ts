@@ -99,7 +99,7 @@ type DrawAction = (
 type SaveAction = (
   ctx: CanvasRenderingContext2D | null,
   shape: Shape
-) => true | Shape | void
+) => false | Shape | void
 export type ShapeInterface = {
   name: string
   isLazyAvailable?: boolean

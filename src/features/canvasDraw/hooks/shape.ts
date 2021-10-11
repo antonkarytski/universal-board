@@ -118,16 +118,19 @@ export function useShape(
     }
     const shape: Shape = { points, brushRadius, brushColor }
     const result = onSave(persistCtx.current, shape)
-    if (result) {
+    if (result !== false) {
       const namedShape =
-        typeof result === 'boolean' ? { name, ...shape } : { name, ...result }
+        typeof result === 'object' ? { name, ...result } : { name, ...shape }
       history.add(namedShape)
     }
 
-    const width = sizeCanvas.current?.width
-    const height = sizeCanvas.current?.height
-    tempCtx.current?.clearRect(0, 0, width || 0, height || 0)
-    pointsCache.current = []
+    const delay = setTimeout(() => {
+      const width = sizeCanvas.current?.width
+      const height = sizeCanvas.current?.height
+      tempCtx.current?.clearRect(0, 0, width || 0, height || 0)
+      pointsCache.current = []
+      clearTimeout(delay)
+    }, 10)
   }
 
   return {

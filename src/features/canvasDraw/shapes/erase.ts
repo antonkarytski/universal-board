@@ -31,5 +31,5 @@ export const Erase: ShapeInterface = {
       eraseDraw(ctx, p1, p2)
     })
   },
-  onSave: () => true,
+  onSave() {},
 }

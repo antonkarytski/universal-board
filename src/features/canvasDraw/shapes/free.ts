@@ -40,13 +40,12 @@ export const Free: ShapeInterface = {
     })
   },
   onSave(ctx, { points, ...brushSettings }) {
-    if (!ctx || points.length < 2) return
+    if (!ctx || points.length < 2) return false
     setBrushSettings(ctx, brushSettings)
     points.forEach((p2, index) => {
       if (index === 0) return
       const p1 = points[index - 1]
       penDraw(ctx, p1, p2)
     })
-    return true
   },
 }
