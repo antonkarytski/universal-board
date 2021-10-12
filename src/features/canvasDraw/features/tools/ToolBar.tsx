@@ -4,14 +4,19 @@ import ColorPicker from './ColorPicker'
 import { Colors } from '../../types'
 import ShapePicker from './ShapePicker'
 import { ShapeName } from '../../shapes'
+import ThicknessSlider from './ThicknessSlider'
 
 type ToolBarProps = {
   currentColor: Colors
   onColorSelect: (color: Colors) => void
   currentShape: ShapeName
   onShapeSelect: (shape: ShapeName) => void
+  currentThickness: number
+  onThicknessSelect: (value: number) => void
   onStepBack: () => void
   onStepForward: () => void
+  isHistoryPlaying: boolean
+  onHistoryReplay: () => void
   onClear: () => void
 }
 
@@ -20,20 +25,45 @@ export default function ToolBar({
   currentColor,
   onShapeSelect,
   currentShape,
+  onThicknessSelect,
+  currentThickness,
   onStepBack,
   onStepForward,
+  isHistoryPlaying,
+  onHistoryReplay,
   onClear,
 }: ToolBarProps) {
   return (
     <>
       <View style={styles.container}>
-        <ColorPicker onSelect={onColorSelect} currentColor={currentColor} />
-        <ShapePicker currentShape={currentShape} onSelect={onShapeSelect} />
+        <ColorPicker onSelect={onColorSelect} currentValue={currentColor} />
+        <ShapePicker onSelect={onShapeSelect} currentValue={currentShape} />
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => onShapeSelect('_free')}
+        >
+          <Text style={styles.buttonText}>Pen</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => onShapeSelect('_erase')}
+        >
+          <Text style={styles.buttonText}>Erase</Text>
+        </TouchableOpacity>
+        <ThicknessSlider
+          onSelect={onThicknessSelect}
+          currentValue={currentThickness}
+        />
         <TouchableOpacity style={styles.button} onPress={onStepBack}>
           <Text style={styles.buttonText}>Back</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={onStepForward}>
           <Text style={styles.buttonText}>Forward</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={onHistoryReplay}>
+          <Text style={styles.buttonText}>
+            {isHistoryPlaying ? 'Pause' : 'Play'}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={onClear}>
           <Text style={styles.buttonText}>Clear</Text>

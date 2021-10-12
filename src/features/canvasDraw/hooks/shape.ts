@@ -1,15 +1,15 @@
-import { MutableRefObject, useRef } from 'react'
+import { useRef } from 'react'
 import { Point, Shape, ShapeInterface } from '../types'
 import { GestureResponderEvent } from 'react-native'
 import { getPointerPos } from '../helpers'
 import { LazyBrushInterface } from './brush'
 import { getWindowSize } from '../helpers/platform'
 import { CacheInterface } from './history'
+import { CanvasInterface } from './canvas'
 
 export type UseShapeProps = {
-  tempCtx: MutableRefObject<CanvasRenderingContext2D | null>
-  persistCtx: MutableRefObject<CanvasRenderingContext2D | null>
-  sizeCanvas: MutableRefObject<HTMLCanvasElement | null>
+  persist: CanvasInterface
+  temp: CanvasInterface
   brush: LazyBrushInterface
   history: CacheInterface
   onMove?: () => void
@@ -27,11 +27,10 @@ export function useShape(
   }: ShapeInterface,
   {
     onMove,
-    tempCtx,
-    persistCtx,
-    sizeCanvas,
+    temp,
+    persist,
     history,
-    brush: { lazy, brushColor, brushRadius },
+    brush: { lazy, brushColor, brushRadius, chainLength },
   }: UseShapeProps
 ) {
   const pointsCache = useRef<Point[]>([])
@@ -39,12 +38,18 @@ export function useShape(
   const isDrawing = useRef(false)
 
   function handlePointerMove(e: GestureResponderEvent) {
-    const { x, y } = getPointerPos(e, sizeCanvas)
-    const sizes = sizeCanvas.current || getWindowSize()
+    const { x, y } = getPointerPos(e, persist.canvas)
+    const sizes = persist.canvas.current || getWindowSize()
+
     lazy.current.update({ x, y })
 
     if (isPressing.current && !isDrawing.current) {
       if (e.nativeEvent.touches && e.nativeEvent.touches.length > 0) {
+        if (!isLazyAvailable) {
+          lazy.current.setRadius(10000)
+        } else {
+          lazy.current.setRadius(chainLength)
+        }
         lazy.current.update({ x, y }, { both: true })
       }
 
@@ -60,8 +65,8 @@ export function useShape(
       pointsCache.current.push(point)
 
       if (onDrawStart) {
-        onDrawStart(tempCtx.current, [...pointsCache.current], {
-          saveCtx: persistCtx.current,
+        onDrawStart(temp.ctx.current, [...pointsCache.current], {
+          saveCtx: persist.ctx.current,
           brushColor,
           brushRadius,
           ...sizes,
@@ -81,8 +86,8 @@ export function useShape(
         firstTouch: true,
       }
       pointsCache.current.push(point)
-      onDrawMove(tempCtx.current, [...pointsCache.current], {
-        saveCtx: persistCtx.current,
+      onDrawMove(temp.ctx.current, [...pointsCache.current], {
+        saveCtx: persist.ctx.current,
         brushRadius,
         brushColor,
         ...sizes,
@@ -104,21 +109,21 @@ export function useShape(
   }
 
   function onTouchEnd(e: GestureResponderEvent) {
-    const sizes = sizeCanvas.current || getWindowSize()
+    const sizes = persist.canvas.current || getWindowSize()
     e.preventDefault()
     isDrawing.current = false
     isPressing.current = false
     const points = [...pointsCache.current]
     if (onDrawEnd) {
-      onDrawEnd(tempCtx.current, points, {
-        saveCtx: persistCtx.current,
+      onDrawEnd(temp.ctx.current, points, {
+        saveCtx: persist.ctx.current,
         brushRadius,
         brushColor,
         ...sizes,
       })
     }
     const shape: Shape = { points, brushRadius, brushColor }
-    const result = onSave(persistCtx.current, shape)
+    const result = onSave(persist.ctx.current, shape)
     if (result !== false) {
       const namedShape =
         typeof result === 'object' ? { name, ...result } : { name, ...shape }
@@ -126,9 +131,9 @@ export function useShape(
     }
 
     const delay = setTimeout(() => {
-      const width = sizeCanvas.current?.width
-      const height = sizeCanvas.current?.height
-      tempCtx.current?.clearRect(0, 0, width || 0, height || 0)
+      const width = persist.canvas.current?.width
+      const height = persist.canvas.current?.height
+      temp.ctx.current?.clearRect(0, 0, width || 0, height || 0)
       pointsCache.current = []
       clearTimeout(delay)
     }, 10)

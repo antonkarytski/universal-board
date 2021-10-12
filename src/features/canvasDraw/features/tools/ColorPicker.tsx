@@ -1,32 +1,29 @@
 import React from 'react'
 import * as COLORS from '../../constants/colors'
 import ColorPickerItem from './ColorPickerItem'
-import { StyleSheet } from 'react-native'
 import { Colors } from '../../types'
 import PalletTool from '../../ui/PalletTool'
+import { PickerProps } from './types'
 
-type ColorPickerProps = {
-  onSelect: (color: Colors) => void
-  currentColor: Colors
-}
+type ColorPickerProps = PickerProps<Colors>
 
 const COLORS_LIST = Object.values(COLORS)
 
 export default function ColorPicker({
   onSelect,
-  currentColor,
+  currentValue,
 }: ColorPickerProps) {
-  const buttonColor = {
-    backgroundColor: currentColor,
+  const button = {
+    backgroundColor: currentValue,
   }
 
   return (
-    <PalletTool list={COLORS_LIST} style={buttonColor}>
+    <PalletTool list={COLORS_LIST} style={{ button }}>
       {(color) => {
         return (
           <ColorPickerItem
             color={color}
-            isActive={currentColor === color}
+            isActive={currentValue === color}
             onSelect={() => onSelect(color)}
             key={color}
           />

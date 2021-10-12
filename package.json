@@ -7,7 +7,8 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "test": "jest",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "connect": "adb -s XPH0219827005633 reverse tcp:8081 tcp:8081"
   },
   "prettier": {
     "semi": false,
@@ -16,6 +17,7 @@
   },
   "dependencies": {
     "@flyskywhy/react-native-gcanvas": "^2.3.7",
+    "@ptomasroos/react-native-multi-slider": "^2.2.2",
     "@types/lazy-brush": "^1.0.1",
     "catenary-curve": "^1.0.1",
     "lazy-brush": "^1.0.1",

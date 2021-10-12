@@ -1,18 +1,30 @@
 import {
   StyleProp,
   StyleSheet,
+  Text,
   TouchableOpacity,
   View,
   ViewStyle,
 } from 'react-native'
 import React, { ReactNode, useState } from 'react'
 
+type NodeGenerator<I> = (item: I) => ReactNode
 type ExtendableItemProps<I> = {
-  list: I[]
-  children: (item: I) => ReactNode
-  style?: StyleProp<ViewStyle>
+  style?: {
+    button?: StyleProp<ViewStyle>
+    pallet?: StyleProp<ViewStyle>
+  }
   buttonInner?: ReactNode
-}
+} & (
+  | {
+      list: I[]
+      children: (item: I) => ReactNode
+    }
+  | {
+      list?: undefined
+      children: ReactNode
+    }
+)
 
 export default function PalletTool<I>({
   children,
@@ -25,14 +37,22 @@ export default function PalletTool<I>({
   return (
     <>
       <TouchableOpacity
-        style={[styles.openButton, style]}
+        style={[styles.openButton, style?.button]}
         onPress={() => setIsActive((state) => !state)}
       >
-        {buttonInner}
+        {typeof buttonInner === 'string' ? (
+          <Text>{buttonInner}</Text>
+        ) : (
+          buttonInner
+        )}
       </TouchableOpacity>
 
       {isActive ? (
-        <View style={styles.palletContainer}>{list.map(children)}</View>
+        <View style={[styles.palletContainer, style?.pallet]}>
+          {!Array.isArray(list)
+            ? children
+            : list.map(children as NodeGenerator<I>)}
+        </View>
       ) : null}
     </>
   )

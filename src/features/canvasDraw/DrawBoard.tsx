@@ -8,6 +8,10 @@ import Shapes, { ShapeName } from './shapes'
 const dummyHistoryController: HistoryController = {
   stepBack() {},
   stepForward() {},
+  togglePlaying: () => false,
+  isPlaying: {
+    current: false,
+  },
 }
 
 const dummyBoardController: ActionsController = {
@@ -19,25 +23,44 @@ export default function DrawBoard() {
   const historyController = useRef(dummyHistoryController)
   const boardController = useRef(dummyBoardController)
   const [currentShape, setCurrentShape] = useState<ShapeName>('_line')
+  const [brushRadius, setBrushRadius] = useState(10)
+  const [isPlaying, setIsPlaying] = useState(false)
 
   return (
     <>
       <DrawArea
         brushColor={brushColor}
+        brushRadius={brushRadius}
         historyController={historyController}
         controller={boardController}
         shape={Shapes[currentShape]}
-      >
-        <ToolBar
-          currentColor={brushColor}
-          onColorSelect={setBrushColor}
-          currentShape={currentShape}
-          onShapeSelect={setCurrentShape}
-          onStepBack={() => historyController.current.stepBack()}
-          onStepForward={() => historyController.current.stepForward()}
-          onClear={() => boardController.current.clear()}
-        />
-      </DrawArea>
+      />
+      <ToolBar
+        currentColor={brushColor}
+        onColorSelect={setBrushColor}
+        currentShape={currentShape}
+        onShapeSelect={setCurrentShape}
+        currentThickness={brushRadius}
+        onThicknessSelect={setBrushRadius}
+        onStepBack={() => {
+          historyController.current.stepBack()
+          setIsPlaying(false)
+        }}
+        onStepForward={() => {
+          historyController.current.stepForward()
+          setIsPlaying(false)
+        }}
+        isHistoryPlaying={isPlaying}
+        onHistoryReplay={() => {
+          const currentState = historyController.current.togglePlaying({
+            onStoryEnd() {
+              setIsPlaying(false)
+            },
+          })
+          if (currentState !== undefined) setIsPlaying(currentState)
+        }}
+        onClear={() => boardController.current.clear()}
+      />
     </>
   )
 }

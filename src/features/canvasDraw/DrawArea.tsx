@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import Canvas from './canvas/Canvas'
 import ObservableContainer from './ObservableContainer'
@@ -11,8 +11,16 @@ import { useDrawingLayers } from './hooks/layer.drawing'
 import { useComponentWillMount } from './helpers/hooks'
 import Shapes from './shapes'
 import TextShape from './features/TextShape'
+import { useDrawHistory } from './hooks/history'
+import { useShape } from './hooks/shape'
+import { clearCanvas } from './helpers'
+import { createSpecialShapeRecord } from './helpers/shapes'
 
-const DrawArea: FC<CanvasDrawProps> = React.memo(
+type ClearProps = {
+  preventSave?: boolean
+}
+
+const DrawArea = React.memo(
   ({
     shape = Shapes._free,
     lazyRadius = 30,
@@ -26,11 +34,10 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
     hideGrid = false,
     imgSrc = '',
     hideInterface = false,
-    children,
     style,
     controller: boardController,
     historyController: historyControllerRef,
-  }) => {
+  }: CanvasDrawProps) => {
     const [isLoaded, setIsLoaded] = useState(false)
     const brush = useBrush({ lazyRadius, brushRadius, brushColor })
 
@@ -47,17 +54,26 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
       catenaryColor,
     })
 
-    const {
-      tempLayer,
-      persistLayer,
-      interactController,
-      historyController,
-      clear,
-    } = useDrawingLayers({
+    const { temp, persist } = useDrawingLayers()
+
+    const { history, controller: historyController } = useDrawHistory(persist)
+    const { controller: interactController } = useShape(shape, {
+      temp,
+      persist,
+      history,
       onMove: updateInterface,
       brush,
-      shape,
     })
+
+    const clear = useCallback(
+      ({ preventSave }: ClearProps = {}) => {
+        clearCanvas(temp.canvas.current)
+        clearCanvas(persist.canvas.current)
+        if (preventSave) return
+        history.add(createSpecialShapeRecord({ name: '_clear' }))
+      },
+      [temp.canvas, persist.canvas, history]
+    )
 
     useComponentWillMount(() => {
       if (historyControllerRef) {
@@ -69,10 +85,10 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
     })
 
     const layers: CanvasList = {
-      temp: tempLayer,
+      temp: temp.canvas,
       background: backgroundLayer,
       interface: interfaceLayer,
-      persist: persistLayer,
+      persist: persist.canvas,
     }
 
     const containerStyle = {
@@ -80,16 +96,6 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
       width: canvasWidth,
       height: canvasHeight,
     }
-
-    // useEffect(() => {
-    //   if (!isTextMode && shape.name === '_text') {
-    //     setTextMode(true)
-    //     return
-    //   }
-    //   if (isTextMode && shape.name !== 'text') {
-    //     setTextMode(false)
-    //   }
-    // }, [shape, isTextMode])
 
     return (
       <ObservableContainer style={[style, containerStyle]}>
@@ -117,14 +123,12 @@ const DrawArea: FC<CanvasDrawProps> = React.memo(
           )
         })}
         <TextShape />
-        {children}
       </ObservableContainer>
     )
   },
   (
-    { children, shape, controller, historyController, ...prevProps },
+    { shape, controller, historyController, ...prevProps },
     {
-      children: nextChildren,
       shape: nextShape,
       controller: nextController,
       historyController: nextHistoryController,

@@ -1,7 +1,4 @@
-import {
-  StyleProp,
-  ViewStyle,
-} from 'react-native'
+import { StyleProp, ViewStyle } from 'react-native'
 import { Coordinates } from 'lazy-brush'
 import { UnionFrom } from './helpers/types'
 import * as COLORS from './constants/colors'
@@ -16,9 +13,15 @@ export type BrushOptions = {
   brushRadius: number
 }
 
+export type TogglePlayingProps = {
+  onStoryEnd?: () => void
+}
+
 export type HistoryController = {
   stepForward: () => void
   stepBack: () => void
+  togglePlaying: (props?: TogglePlayingProps) => boolean | void
+  isPlaying: MutableRefObject<boolean>
 }
 
 export type ActionsController = {
@@ -123,12 +126,6 @@ export type ShapeInterface = {
     }
   | {
       steps: number
-      stepsActions: {
-        onDrawStart?: DrawAction
-        onDrawMove: DrawAction
-        onDrawEnd?: DrawAction
-        onRepeat: RepeatAction
-        onSave: SaveAction
-      }[]
+      stepsActions: {}[]
     }
 )
