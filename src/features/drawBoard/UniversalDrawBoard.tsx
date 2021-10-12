@@ -5,7 +5,7 @@ import {
   withNativeTouch,
 } from './hook.drawBoard'
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
-import Canvas from '../canvasDraw/canvas/Canvas'
+import Canvas from '../canvasDraw/nativeComponents/Canvas'
 
 type DrawBoardProps = { style?: StyleProp<ViewStyle> } & UseDrawBoardProps
 

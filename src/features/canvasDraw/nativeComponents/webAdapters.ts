@@ -6,17 +6,22 @@ export function mouseEventAdapter(
   fn?: (event: GestureResponderEvent) => void
 ) {
   if (!fn) return
+  const nativeEvent = {
+    locationX: event.nativeEvent.offsetX,
+    locationY: event.nativeEvent.offsetY,
+    pageX: event.nativeEvent.pageX,
+    pageY: event.nativeEvent.pageY,
+    identifier: -1 + '',
+    timestamp: event.timeStamp,
+    changedTouches: [],
+    touches: [],
+    target: '',
+  }
   const nativeProps: GestureResponderEvent = {
     nativeEvent: {
-      locationX: event.nativeEvent.offsetX,
-      locationY: event.nativeEvent.offsetY,
-      pageX: event.nativeEvent.pageX,
-      pageY: event.nativeEvent.pageY,
-      identifier: -1 + '',
-      timestamp: event.timeStamp,
-      changedTouches: [],
-      touches: [],
-      target: '',
+      ...nativeEvent,
+      touches: [nativeEvent],
+      changedTouches: [nativeEvent],
     },
     timeStamp: event.timeStamp,
     target: 0,

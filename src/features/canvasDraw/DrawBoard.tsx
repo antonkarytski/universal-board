@@ -22,11 +22,9 @@ export default function DrawBoard() {
   const [brushColor, setBrushColor] = useState<Colors>(GREY)
   const historyController = useRef(dummyHistoryController)
   const boardController = useRef(dummyBoardController)
-  const [currentShape, setCurrentShape] = useState<ShapeName>('_line')
+  const [currentShape, setCurrentShape] = useState<ShapeName>('_rectangle')
   const [brushRadius, setBrushRadius] = useState(10)
   const [isPlaying, setIsPlaying] = useState(false)
-
-  console.log(currentShape)
 
   return (
     <>

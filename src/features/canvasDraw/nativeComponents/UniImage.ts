@@ -1,4 +1,3 @@
-import { IS_WEB } from '../helpers/platform'
 import { Platform } from 'react-native'
 
 type UniImageType = {
@@ -6,11 +5,12 @@ type UniImageType = {
 }
 
 const UniImage: UniImageType = Platform.select({
-  web: () => window.Image,
-  default: () => {
+  native: () => {
+    //@ts-ignore
     const { GImage } = require('@flyskywhy/react-native-gcanvas')
     return GImage
   },
+  default: () => window.Image,
 })()
 
 export default UniImage

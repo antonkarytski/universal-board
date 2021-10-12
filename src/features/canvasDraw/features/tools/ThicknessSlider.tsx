@@ -2,18 +2,28 @@ import React, { useState } from 'react'
 import MultiSlider from '@ptomasroos/react-native-multi-slider'
 import PalletTool from '../../ui/PalletTool'
 import { PickerProps } from './types'
-import { StyleSheet } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 
-type ThicknessSliderProps = PickerProps<number>
+type ThicknessSliderProps = PickerProps<number> & {
+  color?: string
+}
 
 export default function ThicknessSlider({
   currentValue,
   onSelect,
+  color = '#333',
 }: ThicknessSliderProps) {
   const [value, setValue] = useState(currentValue)
 
+  const markerStyle = {
+    width: currentValue,
+    height: currentValue,
+    borderRadius: 100,
+    backgroundColor: color,
+  }
+
   return (
-    <PalletTool style={styles} buttonInner={'Thickness'}>
+    <PalletTool style={styles} buttonInner={<View style={[markerStyle]} />}>
       <MultiSlider
         values={[value]}
         sliderLength={130}
@@ -33,5 +43,10 @@ const styles = StyleSheet.create({
     width: 170,
     justifyContent: 'center',
   },
-  button: {},
+  button: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 60,
+  },
+  marker: {},
 })

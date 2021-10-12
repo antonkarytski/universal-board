@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react'
 import { drawImage } from '../helpers'
 import { useCanvasRef } from './canvas'
-import UniImage from '../canvas/UniImage'
+import UniImage from '../nativeComponents/UniImage'
 
 type UseGridProps = {
   ctx: CanvasRenderingContext2D | null

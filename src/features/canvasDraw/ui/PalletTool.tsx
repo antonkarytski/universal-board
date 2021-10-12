@@ -35,7 +35,7 @@ export default function PalletTool<I>({
   const [isActive, setIsActive] = useState(false)
 
   return (
-    <>
+    <View>
       <TouchableOpacity
         style={[styles.openButton, style?.button]}
         onPress={() => setIsActive((state) => !state)}
@@ -54,7 +54,7 @@ export default function PalletTool<I>({
             : list.map(children as NodeGenerator<I>)}
         </View>
       ) : null}
-    </>
+    </View>
   )
 }
 

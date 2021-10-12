@@ -4,7 +4,7 @@ import { useRepeaterBoard } from './hook.repeaterBoard'
 import { StyleProp, View, ViewStyle } from 'react-native'
 import Button from '../buttons/Button'
 import PlayButton from '../buttons/PlayButton'
-import Canvas from '../canvasDraw/canvas/Canvas'
+import Canvas from '../canvasDraw/nativeComponents/Canvas'
 
 type RepeaterBoardProps = {
   history: MutableRefObject<PointsHistory>

@@ -1,10 +1,20 @@
 import React from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import ColorPicker from './ColorPicker'
 import { Colors } from '../../types'
 import ShapePicker from './ShapePicker'
 import { ShapeName } from '../../shapes'
 import ThicknessSlider from './ThicknessSlider'
+import {
+  faPen,
+  faEraser,
+  faReply,
+  faShare,
+  faTrash,
+  faPlay,
+  faPause,
+} from '@fortawesome/free-solid-svg-icons'
+import IconButton from '../../ui/IconButton'
 
 type ToolBarProps = {
   currentColor: Colors
@@ -38,36 +48,34 @@ export default function ToolBar({
       <View style={styles.container}>
         <ColorPicker onSelect={onColorSelect} currentValue={currentColor} />
         <ShapePicker onSelect={onShapeSelect} currentValue={currentShape} />
-        <TouchableOpacity
-          style={styles.button}
+        <IconButton
+          icon={faPen}
           onPress={() => onShapeSelect('_free')}
-        >
-          <Text style={styles.buttonText}>Pen</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
+          color={currentColor}
+        />
+        <IconButton
+          icon={faEraser}
           onPress={() => onShapeSelect('_erase')}
-        >
-          <Text style={styles.buttonText}>Erase</Text>
-        </TouchableOpacity>
+          color={currentColor}
+          size={30}
+        />
         <ThicknessSlider
+          color={currentColor}
           onSelect={onThicknessSelect}
           currentValue={currentThickness}
         />
-        <TouchableOpacity style={styles.button} onPress={onStepBack}>
-          <Text style={styles.buttonText}>Back</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={onStepForward}>
-          <Text style={styles.buttonText}>Forward</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={onHistoryReplay}>
-          <Text style={styles.buttonText}>
-            {isHistoryPlaying ? 'Pause' : 'Play'}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={onClear}>
-          <Text style={styles.buttonText}>Clear</Text>
-        </TouchableOpacity>
+        <IconButton icon={faReply} onPress={onStepBack} />
+        <IconButton icon={faShare} onPress={onStepForward} />
+        <IconButton
+          icon={isHistoryPlaying ? faPause : faPlay}
+          onPress={onHistoryReplay}
+        />
+        <IconButton
+          style={styles.trashButton}
+          icon={faTrash}
+          color={'#fff'}
+          onPress={onClear}
+        />
       </View>
     </>
   )
@@ -84,15 +92,21 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 10,
     justifyContent: 'flex-end',
-    alignItems: 'flex-end',
+    alignItems: 'center',
   },
 
   button: {
     height: 40,
     width: '100%',
     justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
   },
   buttonText: {
     textAlign: 'center',
+  },
+  trashButton: {
+    backgroundColor: '#ff5279',
+    borderRadius: 10,
   },
 })

@@ -17,6 +17,14 @@ export type UseShapeProps = {
   onMove?: () => void
 }
 
+function getSizes(canvas: HTMLCanvasElement | null) {
+  if (!canvas) return getWindowSize()
+  return {
+    width: canvas.width,
+    height: canvas.height,
+  }
+}
+
 export function useShape(
   {
     name,
@@ -42,7 +50,7 @@ export function useShape(
 
   function handlePointerMove(e: GestureResponderEvent) {
     const { x, y } = getPointerPos(e, persist.canvas)
-    const sizes = persist.canvas.current || getWindowSize()
+    const sizes = getSizes(persist.canvas.current)
 
     lazy.current.update({ x, y })
     interfaceLayer.update()
@@ -115,10 +123,14 @@ export function useShape(
   }
 
   function onTouchEnd(e: GestureResponderEvent) {
-    const sizes = persist.canvas.current || getWindowSize()
+    const sizes = getSizes(persist.canvas.current)
     e.preventDefault()
     isDrawing.current = false
     isPressing.current = false
+    const { x, y } = getPointerPos(e, persist.canvas)
+    lazy.current.setRadius(chainLength)
+    lazy.current.update({ x, y }, { both: true })
+    interfaceLayer.update()
     const points = [...pointsCache.current]
     if (onDrawEnd) {
       onDrawEnd(temp.ctx.current, points, {

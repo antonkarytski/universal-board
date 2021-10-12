@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
+//@ts-ignore
 import { Catenary } from 'catenary-curve'
 import { CanvasInterface, useCanvasRef } from './canvas'
 import { LazyBrushInterface } from './brush'

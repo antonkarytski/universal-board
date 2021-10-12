@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react'
 import { StyleSheet } from 'react-native'
-import Canvas from './canvas/Canvas'
+import Canvas from './nativeComponents/Canvas'
 import ObservableContainer from './ObservableContainer'
 import TextShape from './features/TextShape'
 import { CanvasDrawProps, CanvasList } from './types'
@@ -103,16 +103,24 @@ const DrawArea = React.memo(
           return (
             <Canvas
               key={name}
-              canvasRef={(canvasRef) => {
-                if (canvasRef) {
-                  layers[name].current = canvasRef
-                  layers[name].current!.width = canvasWidth
-                  layers[name].current!.height = canvasHeight
-                  if (Object.values(layers).every((layer) => !!layer.current)) {
-                    setIsLoaded(true)
-                  }
-                }
-              }}
+              canvasRef={
+                !isLoaded
+                  ? (canvasRef) => {
+                      if (canvasRef) {
+                        layers[name].current = canvasRef
+                        layers[name].current!.width = canvasWidth
+                        layers[name].current!.height = canvasHeight
+                        if (
+                          Object.values(layers).every(
+                            (layer) => !!layer.current
+                          )
+                        ) {
+                          setIsLoaded(true)
+                        }
+                      }
+                    }
+                  : () => {}
+              }
               style={[styles.canvas, { zIndex }]}
               width={canvasWidth}
               height={canvasHeight}
