@@ -9,18 +9,18 @@ const eraseDraw: DrawFn = (ctx, p1, p2) => {
 export const Erase: ShapeInterface = {
   name: '_erase',
   isLazyAvailable: true,
-  onDrawMove(_, points, { saveCtx, ...brushSettings }) {
-    if (!saveCtx) return
-    setBrushSettings(saveCtx, brushSettings)
+  onDrawMove(_, points, { persistLayer, ...brushSettings }) {
+    if (!persistLayer.ctx.current) return
+    setBrushSettings(persistLayer.ctx.current, brushSettings)
     const { length } = points
     if (length < 2) return
     const p1 = points[length - 2]
     const p2 = points[length - 1]
-    eraseDraw(saveCtx, p1, p2)
+    eraseDraw(persistLayer.ctx.current, p1, p2)
   },
-  onDrawEnd(_, points, { saveCtx }) {
-    if (!saveCtx) return
-    saveCtx.globalCompositeOperation = 'source-over'
+  onDrawEnd(_, points, { persistLayer }) {
+    if (!persistLayer.ctx.current) return
+    persistLayer.ctx.current.globalCompositeOperation = 'source-over'
   },
   onRepeat(ctx, { points, ...brushSettings }) {
     if (!ctx) return

@@ -26,6 +26,8 @@ export default function DrawBoard() {
   const [brushRadius, setBrushRadius] = useState(10)
   const [isPlaying, setIsPlaying] = useState(false)
 
+  console.log(currentShape)
+
   return (
     <>
       <DrawArea
