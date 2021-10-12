@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import Canvas from './canvas/Canvas'
 import ObservableContainer from './ObservableContainer'
+import TextShape from './features/TextShape'
 import { CanvasDrawProps, CanvasList } from './types'
 import { canvasTypes, windowHeight, windowWidth } from './constants'
 import { useBrush } from './hooks/brush'
@@ -9,12 +10,11 @@ import { useBackgroundLayer } from './hooks/layer.background'
 import { useInterfaceLayer } from './hooks/layer.interface'
 import { useDrawingLayers } from './hooks/layer.drawing'
 import { useComponentWillMount } from './helpers/hooks'
-import Shapes from './shapes'
-import TextShape from './features/TextShape'
 import { useDrawHistory } from './hooks/history'
 import { useShape } from './hooks/shape'
 import { clearCanvas } from './helpers'
 import { createSpecialShapeRecord } from './helpers/shapes'
+import Shapes from './shapes'
 
 type ClearProps = {
   preventSave?: boolean
@@ -23,7 +23,7 @@ type ClearProps = {
 const DrawArea = React.memo(
   ({
     shape = Shapes._free,
-    lazyRadius = 30,
+    lazyRadius = 10,
     brushRadius = 5,
     brushColor = '#444',
     catenaryColor = '#0a0302',
@@ -41,27 +41,25 @@ const DrawArea = React.memo(
     const [isLoaded, setIsLoaded] = useState(false)
     const brush = useBrush({ lazyRadius, brushRadius, brushColor })
 
-    const { backgroundLayer } = useBackgroundLayer({
+    const { background } = useBackgroundLayer({
       isLoaded,
       gridColor,
       hideGrid,
       imgSrc,
     })
-    const { updateInterface, interfaceLayer } = useInterfaceLayer({
+    const interfaceLayer = useInterfaceLayer({
       brush,
       isLoaded,
       hideInterface,
       catenaryColor,
     })
-
     const { temp, persist } = useDrawingLayers()
-
     const { history, controller: historyController } = useDrawHistory(persist)
     const { controller: interactController } = useShape(shape, {
       temp,
       persist,
+      interfaceLayer,
       history,
-      onMove: updateInterface,
       brush,
     })
 
@@ -86,8 +84,8 @@ const DrawArea = React.memo(
 
     const layers: CanvasList = {
       temp: temp.canvas,
-      background: backgroundLayer,
-      interface: interfaceLayer,
+      background: background.canvas,
+      interface: interfaceLayer.canvas,
       persist: persist.canvas,
     }
 

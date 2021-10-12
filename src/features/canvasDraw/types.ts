@@ -3,6 +3,8 @@ import { Coordinates } from 'lazy-brush'
 import { UnionFrom } from './helpers/types'
 import * as COLORS from './constants/colors'
 import { MutableRefObject } from 'react'
+import { CanvasInterface } from './hooks/canvas'
+import { InterfaceLayerController } from './hooks/layer.interface'
 
 export type ObservableContainerProps = {
   style?: StyleProp<ViewStyle>
@@ -77,12 +79,6 @@ export type CanvasList = {
 }
 export type Colors = UnionFrom<typeof COLORS>
 
-export type CanvasLayer = {
-  ctx: CanvasRenderingContext2D | null
-  canvas: HTMLCanvasElement | null
-  isLoaded: boolean
-}
-
 type OnRepeatSettings = {
   withDelay?: boolean
 }
@@ -90,7 +86,8 @@ type OnRepeatSettings = {
 type ActionSetting = BrushOptions & {
   width: number
   height: number
-  saveCtx: CanvasRenderingContext2D | null
+  persistLayer: CanvasInterface
+  interfaceLayer: InterfaceLayerController
 }
 
 type RepeatAction = (

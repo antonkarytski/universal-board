@@ -6,10 +6,12 @@ import { LazyBrushInterface } from './brush'
 import { getWindowSize } from '../helpers/platform'
 import { CacheInterface } from './history'
 import { CanvasInterface } from './canvas'
+import { InterfaceLayerController } from './layer.interface'
 
 export type UseShapeProps = {
   persist: CanvasInterface
   temp: CanvasInterface
+  interfaceLayer: InterfaceLayerController
   brush: LazyBrushInterface
   history: CacheInterface
   onMove?: () => void
@@ -29,6 +31,7 @@ export function useShape(
     onMove,
     temp,
     persist,
+    interfaceLayer,
     history,
     brush: { lazy, brushColor, brushRadius, chainLength },
   }: UseShapeProps
@@ -66,7 +69,8 @@ export function useShape(
 
       if (onDrawStart) {
         onDrawStart(temp.ctx.current, [...pointsCache.current], {
-          saveCtx: persist.ctx.current,
+          persistLayer: persist,
+          interfaceLayer,
           brushColor,
           brushRadius,
           ...sizes,
@@ -87,13 +91,15 @@ export function useShape(
       }
       pointsCache.current.push(point)
       onDrawMove(temp.ctx.current, [...pointsCache.current], {
-        saveCtx: persist.ctx.current,
+        persistLayer: persist,
+        interfaceLayer,
         brushRadius,
         brushColor,
         ...sizes,
       })
     }
 
+    interfaceLayer.update()
     if (onMove) onMove()
   }
 
@@ -116,7 +122,8 @@ export function useShape(
     const points = [...pointsCache.current]
     if (onDrawEnd) {
       onDrawEnd(temp.ctx.current, points, {
-        saveCtx: persist.ctx.current,
+        persistLayer: persist,
+        interfaceLayer,
         brushRadius,
         brushColor,
         ...sizes,

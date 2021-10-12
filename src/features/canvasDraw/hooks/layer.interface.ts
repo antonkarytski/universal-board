@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { Catenary } from 'catenary-curve'
-import { useCanvasRef } from './canvas'
+import { CanvasInterface, useCanvasRef } from './canvas'
 import { LazyBrushInterface } from './brush'
 
 type UseCanvasInterfaceDrawProps = {
@@ -10,6 +10,10 @@ type UseCanvasInterfaceDrawProps = {
   brush: LazyBrushInterface
 }
 
+export type InterfaceLayerController = CanvasInterface & {
+  update: () => void
+}
+
 export function useInterfaceLayer({
   catenaryColor,
   hideInterface,
@@ -17,15 +21,10 @@ export function useInterfaceLayer({
   isLoaded,
 }: UseCanvasInterfaceDrawProps) {
   const catenary = useRef(new Catenary())
-  const { canvas, ctx: interfaceCtx } = useCanvasRef()
+  const interfaceLayer = useCanvasRef() as InterfaceLayerController
+  const { canvas, ctx: interfaceCtx } = interfaceLayer
 
-  const eraseInterface = useCallback(() => {
-    if (!interfaceCtx.current || !canvas.current) return
-    const { width, height } = canvas.current
-    interfaceCtx.current.clearRect(0, 0, width, height)
-  }, [canvas, interfaceCtx])
-
-  const updateInterface = useCallback(() => {
+  const update = useCallback(() => {
     if (hideInterface || !interfaceCtx.current || !canvas.current) {
       return
     }
@@ -77,13 +76,10 @@ export function useInterfaceLayer({
 
   useEffect(() => {
     if (!isLoaded) return
-    updateInterface()
-  }, [isLoaded, updateInterface])
+    update()
+  }, [isLoaded, update])
 
-  return {
-    updateInterface,
-    eraseInterface,
-    interfaceLayer: canvas,
-    interfaceCtx,
-  }
+  interfaceLayer.update = update
+
+  return interfaceLayer
 }

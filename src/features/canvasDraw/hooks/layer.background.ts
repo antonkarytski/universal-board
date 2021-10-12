@@ -1,10 +1,12 @@
 import { useCallback, useEffect } from 'react'
-import { CanvasLayer } from '../types'
 import { drawImage } from '../helpers'
 import { useCanvasRef } from './canvas'
 import UniImage from '../canvas/UniImage'
 
-type UseGridProps = Omit<CanvasLayer, 'isLoaded'>
+type UseGridProps = {
+  ctx: CanvasRenderingContext2D | null
+  canvas: HTMLCanvasElement | null
+}
 
 type DrawGridProps = {
   gridColor: string
@@ -66,7 +68,8 @@ export function useBackgroundLayer({
   gridColor,
   imgSrc,
 }: UseBackgroundLayerProps) {
-  const { ctx, canvas } = useCanvasRef()
+  const background = useCanvasRef()
+  const { ctx, canvas } = background
 
   const drawImageRequest = useCallback(() => {
     if (!imgSrc) return
@@ -102,5 +105,5 @@ export function useBackgroundLayer({
     drawImageRequest()
   }, [hideGrid, isLoaded, gridColor, drawGrid, eraseGrid, drawImageRequest])
 
-  return { backgroundLayer: canvas, backgroundCtx: ctx }
+  return { background }
 }
