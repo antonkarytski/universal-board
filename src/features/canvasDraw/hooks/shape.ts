@@ -45,6 +45,7 @@ export function useShape(
     const sizes = persist.canvas.current || getWindowSize()
 
     lazy.current.update({ x, y })
+    interfaceLayer.update()
 
     if (isPressing.current && !isDrawing.current) {
       if (e.nativeEvent.touches && e.nativeEvent.touches.length > 0) {
@@ -99,7 +100,6 @@ export function useShape(
       })
     }
 
-    interfaceLayer.update()
     if (onMove) onMove()
   }
 

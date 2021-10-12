@@ -13,20 +13,28 @@ export function setBrushSettings(
 type CreateBaseShapeProps = {
   name: string
   draw: (ctx: CanvasRenderingContext2D, points: Point[]) => void
+  drawInterface?: (ctx: CanvasRenderingContext2D, points: Point[]) => void
 }
 
 export function createBaseShape({
   name,
   draw,
+  drawInterface,
 }: CreateBaseShapeProps): ShapeInterface {
   return {
     name,
     isLazyAvailable: false,
-    onDrawMove(ctx, points, { width, height, ...brushSettings }) {
+    onDrawMove(
+      ctx,
+      points,
+      { width, height, interfaceLayer, ...brushSettings }
+    ) {
       if (!ctx || points.length < 2) return
       setBrushSettings(ctx, brushSettings)
       ctx.clearRect(0, 0, width, height)
       draw(ctx, points)
+      if (!interfaceLayer.ctx.current || !drawInterface) return
+      drawInterface(interfaceLayer.ctx.current, points)
     },
     onRepeat(ctx, { points, ...brushSettings }) {
       if (!ctx || points.length < 2) return

@@ -11,7 +11,11 @@ type UseCanvasInterfaceDrawProps = {
 }
 
 export type InterfaceLayerController = CanvasInterface & {
-  update: () => void
+  update: (props?: UpdateProps) => void
+}
+
+type UpdateProps = {
+  injection?: (layer: CanvasInterface) => void
 }
 
 export function useInterfaceLayer({
@@ -24,55 +28,61 @@ export function useInterfaceLayer({
   const interfaceLayer = useCanvasRef() as InterfaceLayerController
   const { canvas, ctx: interfaceCtx } = interfaceLayer
 
-  const update = useCallback(() => {
-    if (hideInterface || !interfaceCtx.current || !canvas.current) {
-      return
-    }
-    const { width, height } = canvas.current
-    const pointer = lazy.current.getPointerCoordinates()
-    const brush = lazy.current.getBrushCoordinates()
-    const ctx = interfaceCtx.current
-    ctx.clearRect(0, 0, width, height)
+  const update = useCallback(
+    ({ injection }: UpdateProps = {}) => {
+      if (hideInterface || !interfaceCtx.current || !canvas.current) {
+        return
+      }
+      const { width, height } = canvas.current
+      const pointer = lazy.current.getPointerCoordinates()
+      const brush = lazy.current.getBrushCoordinates()
+      const ctx = interfaceCtx.current
+      ctx.clearRect(0, 0, width, height)
 
-    // Draw brush preview
-    ctx.beginPath()
-    ctx.fillStyle = brushColor
-    ctx.arc(brush.x, brush.y, brushRadius || 10, 0, Math.PI * 2, true)
-    ctx.fill()
-
-    // Draw mouse point (the one directly at the cursor)
-    ctx.beginPath()
-    ctx.fillStyle = catenaryColor
-    ctx.arc(pointer.x, pointer.y, 4, 0, Math.PI * 2, true)
-    ctx.fill()
-
-    // Draw catenary
-    if (lazy.current.isEnabled()) {
+      // Draw brush preview
       ctx.beginPath()
-      ctx.lineWidth = 2
-      ctx.lineCap = 'round'
-      ctx.setLineDash([2, 4])
-      ctx.strokeStyle = catenaryColor
-      catenary.current.drawToCanvas(ctx, brush, pointer, chainLength)
-      ctx.stroke()
-    }
+      ctx.fillStyle = brushColor
+      ctx.arc(brush.x, brush.y, brushRadius || 10, 0, Math.PI * 2, true)
+      ctx.fill()
 
-    // Draw brush point (the one in the middle of the brush preview)
-    ctx.beginPath()
-    ctx.fillStyle = catenaryColor
-    ctx.arc(brush.x, brush.y, 2, 0, Math.PI * 2, true)
-    ctx.fill()
-  }, [
-    catenaryColor,
-    catenary,
-    brushColor,
-    brushRadius,
-    hideInterface,
-    lazy,
-    chainLength,
-    canvas,
-    interfaceCtx,
-  ])
+      // Draw mouse point (the one directly at the cursor)
+      ctx.beginPath()
+      ctx.fillStyle = catenaryColor
+      ctx.arc(pointer.x, pointer.y, 4, 0, Math.PI * 2, true)
+      ctx.fill()
+
+      // Draw catenary
+      if (lazy.current.isEnabled()) {
+        ctx.beginPath()
+        ctx.lineWidth = 2
+        ctx.lineCap = 'round'
+        ctx.setLineDash([2, 4])
+        ctx.strokeStyle = catenaryColor
+        catenary.current.drawToCanvas(ctx, brush, pointer, chainLength)
+        ctx.stroke()
+      }
+
+      // Draw brush point (the one in the middle of the brush preview)
+      ctx.beginPath()
+      ctx.fillStyle = catenaryColor
+      ctx.arc(brush.x, brush.y, 2, 0, Math.PI * 2, true)
+      ctx.fill()
+
+      if (injection) injection(interfaceLayer)
+    },
+    [
+      interfaceLayer,
+      catenaryColor,
+      catenary,
+      brushColor,
+      brushRadius,
+      hideInterface,
+      lazy,
+      chainLength,
+      canvas,
+      interfaceCtx,
+    ]
+  )
 
   useEffect(() => {
     if (!isLoaded) return

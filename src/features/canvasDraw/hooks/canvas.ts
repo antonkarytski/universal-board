@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import { clearCanvas } from '../helpers'
 
 export function useCanvasRef() {
@@ -13,7 +13,7 @@ export function useCanvasRef() {
     clearCanvas(canvas.current)
   }, [])
 
-  return { canvas, ctx, clear }
+  return useMemo(() => ({ canvas, ctx, clear }), [canvas, ctx, clear])
 }
 
 export type CanvasInterface = ReturnType<typeof useCanvasRef>
