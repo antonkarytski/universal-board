@@ -47,7 +47,11 @@ export default function ToolBar({
     <>
       <View style={styles.container}>
         <ColorPicker onSelect={onColorSelect} currentValue={currentColor} />
-        <ShapePicker onSelect={onShapeSelect} currentValue={currentShape} />
+        <ShapePicker
+          color={currentColor}
+          onSelect={onShapeSelect}
+          currentValue={currentShape}
+        />
         <IconButton
           icon={faPen}
           onPress={() => onShapeSelect('_free')}

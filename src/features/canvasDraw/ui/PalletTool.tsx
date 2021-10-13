@@ -63,6 +63,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 10,
+    marginBottom: 10,
   },
 
   palletContainer: {
