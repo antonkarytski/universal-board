@@ -1,5 +1,5 @@
 import { Point } from '../types'
-import { createBaseShape } from './_helpers'
+import { createBaseShape, drawBaseShapeInterface } from './_helpers'
 
 function draw(ctx: CanvasRenderingContext2D, points: Point[]) {
   const p1 = points[0]
@@ -12,4 +12,5 @@ function draw(ctx: CanvasRenderingContext2D, points: Point[]) {
 export const Rectangle = createBaseShape({
   name: '_rectangle',
   draw,
+  drawInterface: drawBaseShapeInterface,
 })
