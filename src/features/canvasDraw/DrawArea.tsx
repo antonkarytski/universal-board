@@ -1,9 +1,8 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import { StyleSheet } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import Canvas from './nativeComponents/Canvas'
-import ObservableContainer from './ObservableContainer'
 import TextShape from './features/TextShape'
-import { CanvasDrawProps, CanvasList } from './types'
+import { CachedHistory, CanvasDrawProps, CanvasList } from './types'
 import { canvasTypes, windowHeight, windowWidth } from './constants'
 import { useBrush } from './hooks/brush'
 import { useBackgroundLayer } from './hooks/layer.background'
@@ -15,6 +14,7 @@ import { useShape } from './hooks/shape'
 import { clearCanvas, setCanvasSize } from './helpers'
 import { createSpecialShapeRecord } from './helpers/shapes'
 import Shapes from './shapes'
+import { useResizeObserver } from './hooks/resizeObserver'
 
 type ClearProps = {
   preventSave?: boolean
@@ -54,7 +54,11 @@ const DrawArea = React.memo(
       catenaryColor,
     })
     const { temp, persist } = useDrawingLayers()
-    const { history, controller: historyController } = useDrawHistory(persist)
+    const {
+      history,
+      controller: historyController,
+      redrawHistory,
+    } = useDrawHistory(persist)
     const { controller: interactController } = useShape(shape, {
       temp,
       persist,
@@ -92,19 +96,51 @@ const DrawArea = React.memo(
       [temp.canvas, background.canvas, interfaceLayer.canvas, persist.canvas]
     )
 
-    const containerStyle = {
-      backgroundColor,
-      // width: canvasWidth,
-      // height: canvasHeight,
-      width: '100%',
-      height: '100%',
-      flex: 1,
-    }
+    const saveHistory = useCallback(() => {
+      return JSON.stringify({
+        cache: history.cache.current,
+        currentIndex: history.currentIndex.current,
+        width: canvasWidth,
+        height: canvasHeight,
+      })
+    }, [history.currentIndex, history.cache, canvasHeight, canvasWidth])
+
+    const loadHistory = useCallback(
+      (cachedHistory: string) => {
+        const { cache, currentIndex, width, height } = JSON.parse(
+          cachedHistory
+        ) as CachedHistory
+        history.currentIndex.current = currentIndex
+        if (width === canvasWidth && height === canvasHeight) {
+          history.cache.current = cache
+        } else {
+          const scaleX = canvasWidth / width
+          const scaleY = canvasHeight / height
+          const scaleAvg = (scaleX + scaleY) / 2
+          history.cache.current = cache.map(({ points, ...shapeOptions }) => {
+            return {
+              points: points.map(({ x, y, ...options }) => {
+                return { x: x * scaleX, y: y * scaleY, ...options }
+              }),
+              ...shapeOptions,
+              brushRadius: shapeOptions.brushRadius * scaleAvg,
+            }
+          })
+        }
+        redrawHistory({ tillIndex: history.currentIndex.current })
+      },
+      [
+        canvasWidth,
+        canvasHeight,
+        history.cache,
+        history.currentIndex,
+        redrawHistory,
+      ]
+    )
 
     const onResize: ResizeObserverCallback = useCallback(
       (entries) => {
-        //const savedData = getSaveData()
-        console.log('HERE')
+        const cachedHistory = saveHistory()
         for (const entry of entries) {
           const { width, height } = entry.contentRect
           Object.values(layers).forEach((canvas) => {
@@ -115,16 +151,32 @@ const DrawArea = React.memo(
           //drawImageRequest()
           //loop({ once: true })
         }
-        //loadSaveData(savedData, true)
+        loadHistory(cachedHistory)
       },
-      [background, layers]
+      [background, layers, loadHistory, saveHistory]
     )
 
+    const { observable } = useResizeObserver({
+      onResize,
+      isLoaded,
+    })
+
+    const containerStyle = {
+      backgroundColor,
+      // width: canvasWidth,
+      // height: canvasHeight,
+      width: '100%',
+      height: '100%',
+      flex: 1,
+    }
+
     return (
-      <ObservableContainer
+      <View
         style={[style, containerStyle]}
-        onResize={onResize}
-        isLoaded={isLoaded}
+        ref={(container) => {
+          if (!container) return
+          observable.current = container
+        }}
       >
         {canvasTypes.map(({ name, zIndex }) => {
           const isInterface = name === 'interface'
@@ -158,7 +210,7 @@ const DrawArea = React.memo(
           )
         })}
         <TextShape />
-      </ObservableContainer>
+      </View>
     )
   },
   (

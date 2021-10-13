@@ -11,15 +11,27 @@ export type BrushOptions = {
   brushRadius: number
 }
 
-export type TogglePlayingProps = {
+export type DrawHistoryProps = {
   onStoryEnd?: () => void
+  onStop?: () => void
+  immediate?: boolean
+  tillIndex?: number
 }
 
 export type HistoryController = {
   stepForward: () => void
   stepBack: () => void
-  togglePlaying: (props?: TogglePlayingProps) => boolean | void
+  togglePlaying: (props?: DrawHistoryProps) => boolean | void
   isPlaying: MutableRefObject<boolean>
+}
+
+export const dummyHistoryController: HistoryController = {
+  stepBack() {},
+  stepForward() {},
+  togglePlaying: () => false,
+  isPlaying: {
+    current: false,
+  },
 }
 
 export type ActionsController = {
@@ -122,3 +134,10 @@ export type ShapeInterface = {
       stepsActions: {}[]
     }
 )
+
+export type CachedHistory = {
+  cache: SpecifiedShape[]
+  currentIndex: number
+  width: number
+  height: number
+}

@@ -2,17 +2,13 @@ import React, { useRef, useState } from 'react'
 import DrawArea from './DrawArea'
 import ToolBar from './features/tools/ToolBar'
 import { GREY } from './constants/colors'
-import { ActionsController, Colors, HistoryController } from './types'
+import {
+  ActionsController,
+  Colors,
+  dummyHistoryController,
+  HistoryController,
+} from './types'
 import Shapes, { ShapeName } from './shapes'
-
-const dummyHistoryController: HistoryController = {
-  stepBack() {},
-  stepForward() {},
-  togglePlaying: () => false,
-  isPlaying: {
-    current: false,
-  },
-}
 
 const dummyBoardController: ActionsController = {
   clear() {},

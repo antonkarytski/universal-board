@@ -1,5 +1,5 @@
-import { useRef } from 'react'
-import { SpecifiedShape, TogglePlayingProps } from '../types'
+import { useCallback, useRef } from 'react'
+import { SpecifiedShape, DrawHistoryProps } from '../types'
 import { CanvasInterface } from './canvas'
 import Shapes, { ShapeName } from '../shapes'
 
@@ -23,11 +23,15 @@ export function useCache() {
 }
 
 export type CacheInterface = ReturnType<typeof useCache>
+type RedrawHistoryProps = {
+  initial?: boolean
+} & DrawHistoryProps
 
 export function useDrawHistory(canvas: CanvasInterface) {
   const history = useCache()
   const { currentIndex: currentShapeIndex } = history
   const isPlaying = useRef(false)
+  const forceStop = useRef(false)
 
   function stepBack() {
     if (currentShapeIndex.current === -1) return
@@ -51,7 +55,39 @@ export function useDrawHistory(canvas: CanvasInterface) {
     currentShapeIndex.current += 1
   }
 
-  function byShapes({ onStoryEnd }: TogglePlayingProps) {
+  const redrawHistory = useCallback(
+    ({ initial = true, tillIndex }: RedrawHistoryProps = {}) => {
+      if (!history.cache.current.length) return
+      if (initial) {
+        forceStop.current = true
+        currentShapeIndex.current = -1
+        canvas.clear()
+        const delay = setTimeout(() => {
+          redrawHistory({ initial: false })
+          clearTimeout(delay)
+        }, 100)
+        return
+      }
+      if (
+        currentShapeIndex.current >= history.cache.current.length - 1 ||
+        (tillIndex !== undefined && currentShapeIndex.current === tillIndex)
+      ) {
+        return
+      }
+
+      const newShapeIndex = currentShapeIndex.current + 1
+      const shape = history.cache.current[newShapeIndex]
+      shapeHandler(canvas, shape)
+      redrawHistory({ initial: false })
+    },
+    [canvas, currentShapeIndex, history.cache]
+  )
+
+  function byShapes(props: DrawHistoryProps) {
+    if (forceStop.current) {
+      if (props.onStop) props.onStop()
+      return
+    }
     if (!isPlaying.current || !history.cache.current.length) return
     if (currentShapeIndex.current >= history.cache.current.length - 1) {
       canvas.clear()
@@ -69,21 +105,30 @@ export function useDrawHistory(canvas: CanvasInterface) {
       shapeHandler(canvas, shape)
     }
 
-    if (newShapeIndex === history.cache.current.length - 1) {
+    const isStoryEnd = newShapeIndex === history.cache.current.length - 1
+    const isEndByIndex =
+      props.tillIndex !== undefined && props.tillIndex === newShapeIndex
+    const isEnd = isEndByIndex || isStoryEnd || forceStop.current
+    if (isEnd) {
       isPlaying.current = false
-      if (onStoryEnd) onStoryEnd()
+      forceStop.current = false
+      if (props.onStop) props.onStop()
     }
     if (!isPlaying.current) return
+    if (props.immediate) {
+      byShapes(props)
+      return
+    }
     const timer = setTimeout(() => {
-      byShapes({ onStoryEnd })
+      byShapes(props)
       clearTimeout(timer)
     }, 500)
   }
 
-  function togglePlaying({ onStoryEnd }: TogglePlayingProps = {}) {
+  function togglePlaying(props: DrawHistoryProps = {}) {
     if (!history.cache.current.length) return
     isPlaying.current = !isPlaying.current
-    if (isPlaying.current) byShapes({ onStoryEnd })
+    if (isPlaying.current) byShapes(props)
     return isPlaying.current
   }
 
@@ -95,6 +140,7 @@ export function useDrawHistory(canvas: CanvasInterface) {
       stepForward,
       togglePlaying,
     },
+    redrawHistory,
   }
 }
 

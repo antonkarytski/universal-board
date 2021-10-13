@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { View } from 'react-native'
 import ResizeObserver from 'resize-observer-polyfill'
 import { IS_WEB } from '../helpers/platform'
+import { setCanvasSize } from '../helpers'
 
 type UseResizeObserverProps = {
   onResize: ResizeObserverCallback

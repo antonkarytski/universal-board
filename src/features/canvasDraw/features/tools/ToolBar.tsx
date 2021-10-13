@@ -60,7 +60,6 @@ export default function ToolBar({
         <IconButton
           icon={faEraser}
           onPress={() => onShapeSelect('_erase')}
-          color={currentColor}
           size={30}
         />
         <ThicknessSlider
