@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import Canvas from './nativeComponents/Canvas'
 import ObservableContainer from './ObservableContainer'
@@ -12,7 +12,7 @@ import { useDrawingLayers } from './hooks/layer.drawing'
 import { useComponentWillMount } from './helpers/hooks'
 import { useDrawHistory } from './hooks/history'
 import { useShape } from './hooks/shape'
-import { clearCanvas } from './helpers'
+import { clearCanvas, setCanvasSize } from './helpers'
 import { createSpecialShapeRecord } from './helpers/shapes'
 import Shapes from './shapes'
 
@@ -41,7 +41,7 @@ const DrawArea = React.memo(
     const [isLoaded, setIsLoaded] = useState(false)
     const brush = useBrush({ lazyRadius, brushRadius, brushColor })
 
-    const { background } = useBackgroundLayer({
+    const background = useBackgroundLayer({
       isLoaded,
       gridColor,
       hideGrid,
@@ -82,21 +82,50 @@ const DrawArea = React.memo(
       }
     })
 
-    const layers: CanvasList = {
-      temp: temp.canvas,
-      background: background.canvas,
-      interface: interfaceLayer.canvas,
-      persist: persist.canvas,
-    }
+    const layers: CanvasList = useMemo(
+      () => ({
+        temp: temp.canvas,
+        background: background.canvas,
+        interface: interfaceLayer.canvas,
+        persist: persist.canvas,
+      }),
+      [temp.canvas, background.canvas, interfaceLayer.canvas, persist.canvas]
+    )
 
     const containerStyle = {
       backgroundColor,
-      width: canvasWidth,
-      height: canvasHeight,
+      // width: canvasWidth,
+      // height: canvasHeight,
+      width: '100%',
+      height: '100%',
+      flex: 1,
     }
 
+    const onResize: ResizeObserverCallback = useCallback(
+      (entries) => {
+        //const savedData = getSaveData()
+        console.log('HERE')
+        for (const entry of entries) {
+          const { width, height } = entry.contentRect
+          Object.values(layers).forEach((canvas) => {
+            if (!canvas.current) return
+            setCanvasSize(canvas.current, width, height)
+          })
+          background.drawGrid()
+          //drawImageRequest()
+          //loop({ once: true })
+        }
+        //loadSaveData(savedData, true)
+      },
+      [background, layers]
+    )
+
     return (
-      <ObservableContainer style={[style, containerStyle]}>
+      <ObservableContainer
+        style={[style, containerStyle]}
+        onResize={onResize}
+        isLoaded={isLoaded}
+      >
         {canvasTypes.map(({ name, zIndex }) => {
           const isInterface = name === 'interface'
           const canvasController = isInterface ? interactController : {}

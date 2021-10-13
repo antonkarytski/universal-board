@@ -12,6 +12,7 @@ import {
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import UniFontAwesome from '../../nativeComponents/UniFontAwesome'
 import IconButton from '../../ui/IconButton'
+import { IS_WEB } from '../../helpers/platform'
 
 const SHAPES_ICONS: Partial<{ [key in ShapeName]: IconProp }> = {
   _circle: faCircle,
@@ -38,8 +39,9 @@ export default function ShapePicker({
       buttonInner={
         <UniFontAwesome
           color={color}
-          size={30}
+          size={!IS_WEB ? 30 : undefined}
           icon={SHAPES_ICONS[currentValue] || faShapes}
+          style={IS_WEB ? { fontSize: 30 } : {}}
         />
       }
       list={SHAPES_LIST}

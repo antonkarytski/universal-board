@@ -1,28 +1,23 @@
 import { useResizeObserver } from './hooks/resizeObserver'
-import React, { FC, useCallback } from 'react'
-import { View } from 'react-native'
-import { ObservableContainerProps } from './types'
+import React, { FC } from 'react'
+import { StyleProp, View, ViewStyle } from 'react-native'
+
+export type ObservableContainerProps = {
+  style?: StyleProp<ViewStyle>
+  onResize: ResizeObserverCallback
+  isLoaded?: boolean
+}
 
 const ObservableContainer: FC<ObservableContainerProps> = ({
   children,
   style,
+  onResize,
+  isLoaded,
 }) => {
-  const onResize: ResizeObserverCallback = useCallback((entries) => {
-    //const savedData = getSaveData()
-    for (const entry of entries) {
-      //const { width, height } = entry.contentRect
-      // setCanvasSize(canvas.current.interface, width, height)
-      // setCanvasSize(canvas.current.drawing, width, height)
-      // setCanvasSize(canvas.current.temp, width, height)
-      // setCanvasSize(canvas.current.grid, width, height)
-      //drawGrid(ctxList.current.grid, { width, height })
-      //drawImageRequest()
-      //loop({ once: true })
-    }
-    //loadSaveData(savedData, true)
-  }, [])
-
-  const { observable: containerRef } = useResizeObserver({ onResize })
+  const { observable: containerRef } = useResizeObserver({
+    onResize,
+    isLoaded,
+  })
 
   return (
     <View

@@ -1,14 +1,10 @@
-import { StyleProp, ViewStyle } from 'react-native'
 import { Coordinates } from 'lazy-brush'
 import { UnionFrom } from './helpers/types'
 import * as COLORS from './constants/colors'
 import { MutableRefObject } from 'react'
 import { CanvasInterface } from './hooks/canvas'
 import { InterfaceLayerController } from './hooks/layer.interface'
-
-export type ObservableContainerProps = {
-  style?: StyleProp<ViewStyle>
-}
+import { StyleProp, ViewStyle } from 'react-native'
 
 export type BrushOptions = {
   brushColor: string
@@ -45,13 +41,13 @@ export type CanvasDrawProps = {
   canvasHeight?: number | undefined
   hideInterface?: boolean | undefined
   imgSrc?: string | undefined
-
+  style?: StyleProp<ViewStyle>
   //saveData?: string | undefined
   //immediateLoading?: boolean | undefined
   //className?: string | undefined
   //disabled?: boolean | undefined
   //loadTimeOffset?: number | undefined
-} & ObservableContainerProps
+}
 
 export type Point = {
   timeStamp: number

@@ -27,7 +27,7 @@ export default function IconButton({
       <UniFontAwesome
         icon={icon}
         color={color}
-        size={size}
+        size={!IS_WEB ? size : undefined}
         style={IS_WEB ? { fontSize: size } : {}}
       />
     </TouchableOpacity>

@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 import { drawImage } from '../helpers'
-import { useCanvasRef } from './canvas'
+import { CanvasInterface, useCanvasRef } from './canvas'
 import UniImage from '../nativeComponents/UniImage'
 
 type UseGridProps = {
@@ -62,13 +62,18 @@ type UseBackgroundLayerProps = {
   imgSrc?: string
 }
 
+type BackgroundController = CanvasInterface & {
+  drawGrid: () => void
+  eraseGrid: () => void
+}
+
 export function useBackgroundLayer({
   isLoaded,
   hideGrid,
   gridColor,
   imgSrc,
 }: UseBackgroundLayerProps) {
-  const background = useCanvasRef()
+  const background = useCanvasRef() as BackgroundController
   const { ctx, canvas } = background
 
   const drawImageRequest = useCallback(() => {
@@ -105,5 +110,11 @@ export function useBackgroundLayer({
     drawImageRequest()
   }, [hideGrid, isLoaded, gridColor, drawGrid, eraseGrid, drawImageRequest])
 
-  return { background }
+  background.drawGrid = useCallback(
+    () => drawGrid({ gridColor }),
+    [drawGrid, gridColor]
+  )
+  background.eraseGrid = eraseGrid
+
+  return background
 }

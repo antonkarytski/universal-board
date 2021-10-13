@@ -82,7 +82,7 @@ export function midPointBtw(p1: Coordinates, p2: Coordinates) {
   }
 }
 
-function setCanvasSize(
+export function setCanvasSize(
   canvas: HTMLCanvasElement | null,
   width: number | string,
   height: number | string
