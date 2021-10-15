@@ -23,15 +23,18 @@ export default function ThicknessSlider({
   }
 
   return (
-    <PalletTool style={styles} buttonInner={<View style={[markerStyle]} />}>
-      <Slider
-        onValueChange={val => setValue(val)}
-        onResponderEnd={() => onSelect(value)}
-        value={value}
-        minimumValue={2.5}
-        maximumValue={25}
-      />
-    </PalletTool>
+    <>
+      <PalletTool style={styles} buttonInner={<View style={[markerStyle]} />}>
+        <Slider
+          onValueChange={setValue}
+          onResponderEnd={() => onSelect(value)}
+          value={value}
+          style={styles.slider}
+          minimumValue={2.5}
+          maximumValue={25}
+        />
+      </PalletTool>
+    </>
   )
 }
 
@@ -44,6 +47,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     height: 60,
+  },
+  slider: {
+    width: '100%',
   },
   marker: {},
 })

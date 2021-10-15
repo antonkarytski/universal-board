@@ -86,7 +86,7 @@ export function midPointBtw(p1: Coordinates, p2: Coordinates) {
 export function setCanvasSize(
   canvas: HTMLCanvasElement | null,
   width: number | string,
-  height: number | string,
+  height: number | string
 ) {
   if (!canvas) return
   canvas.width = +width
@@ -97,7 +97,7 @@ export function setCanvasSize(
 
 export function getPointerPos(
   e: GestureResponderEvent,
-  controlCanvas: MutableRefObject<HTMLCanvasElement | null>,
+  controlCanvas: MutableRefObject<HTMLCanvasElement | null>
 ) {
   let clientX = e.nativeEvent.locationX
   let clientY = e.nativeEvent.locationY
@@ -127,6 +127,14 @@ export function clearCanvas(canvas: HTMLCanvasElement | null) {
   if (ctx) {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
   }
+}
+
+export function clearCanvasByContext(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number
+) {
+  ctx.clearRect(0, 0, width, height)
 }
 
 export function withMobileDelay(fn: () => unknown) {

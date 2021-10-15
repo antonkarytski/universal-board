@@ -1,9 +1,9 @@
-import React, {useRef, useState} from 'react'
+import React, { useRef, useState } from 'react'
 import DrawArea from './DrawArea'
 import ToolBar from './features/ToolBar/ToolBar'
-import {GREY} from './constants/colors'
-import {ActionsController, Colors, dummyHistoryController} from './types'
-import {ToolName} from './tools'
+import { GREY } from './constants/colors'
+import { ActionsController, Colors, dummyHistoryController } from './types'
+import { ToolName } from './tools'
 
 const dummyBoardController: ActionsController = {
   clear() {},

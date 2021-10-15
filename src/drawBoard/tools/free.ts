@@ -1,7 +1,20 @@
 import { Point, ToolInterface } from '../types'
-import { midPointBtw } from '../helpers'
+import { clearCanvasByContext, midPointBtw } from '../helpers'
 import { setBrushSettings } from './_helpers'
 import { IS_WEB } from '../helpers/platform'
+
+function mobilePenRedraw(ctx: CanvasRenderingContext2D, points: Point[]) {
+  points.forEach((p2, index) => {
+    if (index === 0) return
+    const p1 = points[index - 1]
+    const midPoint = midPointBtw(p1, p2)
+    ctx.beginPath()
+    ctx.moveTo(p1.x, p1.y)
+    ctx.quadraticCurveTo(p2.x, p2.y, midPoint.x, midPoint.y)
+    ctx.lineTo(p2.x, p2.y)
+    ctx.stroke()
+  })
+}
 
 export function penDraw(ctx: CanvasRenderingContext2D, points: Point[]) {
   const { length } = points
@@ -32,7 +45,9 @@ function penRedraw(ctx: CanvasRenderingContext2D, points: Point[]) {
   ctx.stroke()
 }
 
-const actionDraw = IS_WEB ? penRedraw : penDraw
+const draw = IS_WEB ? penRedraw : penDraw
+const redraw = IS_WEB ? penRedraw : mobilePenRedraw
+const clear = IS_WEB ? clearCanvasByContext : () => {}
 
 export const Free: ToolInterface = {
   name: '_free',
@@ -40,17 +55,17 @@ export const Free: ToolInterface = {
   onDrawMove(ctx, points, { width, height, ...brushSettings }) {
     if (!ctx) return
     setBrushSettings(ctx, brushSettings)
-    ctx.clearRect(0, 0, width, height)
-    actionDraw(ctx, points)
+    clear(ctx, width, height)
+    draw(ctx, points)
   },
   onRepeat(ctx, { points, ...brushSettings }) {
     if (!ctx) return
     setBrushSettings(ctx, brushSettings)
-    penRedraw(ctx, points)
+    redraw(ctx, points)
   },
   onSave(ctx, { points, ...brushSettings }) {
     if (!ctx || points.length < 2) return false
     setBrushSettings(ctx, brushSettings)
-    penRedraw(ctx, points)
+    redraw(ctx, points)
   },
 }
